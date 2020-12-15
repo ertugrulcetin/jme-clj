@@ -3,8 +3,12 @@
 A Clojure wrapper library for [jMonkeyEngine](https://github.com/jMonkeyEngine/jmonkeyengine). jMonkeyEngine is a 3D
 game engine for adventurous Java developers (now Clojure developers). It is open-source, cross-platform, and
 cutting-edge. Please check [jMonkeyEngine Wiki](https://wiki.jmonkeyengine.org/docs/3.3/documentation.html) if you would
-like to learn more about the engine. Also, there is [jMonkeyEngine Hub](https://hub.jmonkeyengine.org/) that you can
-ask/search for questions, the community is very responsive and friendly.
+like to learn more about the engine, highly recommended! Also, there
+is [jMonkeyEngine Hub](https://hub.jmonkeyengine.org/) that you can ask/search for questions, the community is very
+responsive and friendly.
+
+The engine is used by several commercial game studios and computer-science courses. Here's a taste:
+![jME3 Games Mashup](https://i.imgur.com/nF8WOW6.jpg)
 
 ## Usage
 
