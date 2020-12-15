@@ -6,7 +6,7 @@
    (com.jme3.app SimpleApplication)
    (com.jme3.light DirectionalLight AmbientLight LightProbe PointLight SpotLight)
    (com.jme3.material Material)
-   (com.jme3.math ColorRGBA Vector3f)
+   (com.jme3.math Vector3f)
    (com.jme3.scene Geometry Node Spatial)
    (com.jme3.scene.shape Box)
    (com.jme3.system AppSettings)))
@@ -107,7 +107,7 @@
   `(~(symbol (csk/->camelCase (str ".get-" (name kw)))) ~obj ~@args))
 
 
-(defn- map->app-settings [settings]
+(defn map->app-settings [settings]
   (when (seq settings)
     (apply app-settings
            (into (-> settings :load-defaults? vector)
@@ -132,29 +132,6 @@
      (merge ~@(map #(hash-map (keyword %) %) (take-nth 2 bindings)))))
 
 
-(defn init [^SimpleApplication app]
-  (letj [b (box 1 1 1)
-         geom (geo "Box" b)
-         asset-manager (get-manager app :asset)
-         mat (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")
-         model (load-model asset-manager "Models/Oto/OtoOldAnim.j3o")
-         light (light :directional)
-         root-node (root-node app)
-         counter 1]
-        (add-light root-node light)
-        (set* light :direction (vec3 -0.1 -1 -1 :normalize))
-        (set* mat :color "Color" ColorRGBA/Blue)
-        (set* geom :material mat)
-        (-> root-node
-            (attach-child geom)
-            (attach-child model))))
-
-
-(defn simple-update [^SimpleApplication app tpf]
-  (let [{:keys [counter]} (::app @states)]
-    {:counter (inc counter)}))
-
-
 (defmacro defsimpleapp
   [name & {:keys [opts init update]}]
   `(defonce ~name (let [app# (proxy [SimpleApplication] []
@@ -172,18 +149,6 @@
                       (some->> ~opts :pause-on-lost-focus? (.setPauseOnLostFocus app#))
                       (some->> ~opts :settings map->app-settings (.setSettings app#)))
                     app#)))
-
-
-(defsimpleapp app
-              :opts {:show-settings?       false
-                     :pause-on-lost-focus? false
-                     :settings             {:load-defaults? true
-                                            :title          "My JME Game"
-                                            :vsync?         true
-                                            :frame-rate     60}}
-              :init init
-              :update simple-update)
-
 
 
 (defn start-app [app]
@@ -205,11 +170,3 @@
 
 (defn running? [app]
   (boolean (some-> app .getContext .isCreated)))
-
-(comment
- (start-app app)
- (stop-app app)
- (re-init app init)
- (unbind-app #'app)
- @states
- )
