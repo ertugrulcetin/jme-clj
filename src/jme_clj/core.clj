@@ -54,6 +54,7 @@
   (let [root-node (.getRootNode app)]
     (detach-all-child root-node)
     (.clear (.getLocalLightList root-node))
+    (reset! states {})
     root-node))
 
 
@@ -131,7 +132,7 @@
   (.scale spatial x y z))
 
 
-;;TODO (set* (material 1) ..) not working, because obj arg is list.
+
 (defmacro set* [obj kw & args]
   `(do
      (~(symbol (csk/->camelCase (str ".set-" (name kw)))) ~obj ~@args)
@@ -191,6 +192,7 @@
 
 
 (defn stop-app [app]
+  (reset! states {})
   (doto app .stop))
 
 
