@@ -9,7 +9,9 @@
    (com.jme3.math Vector3f)
    (com.jme3.scene Geometry Node Spatial)
    (com.jme3.scene.shape Box)
-   (com.jme3.system AppSettings)))
+   (com.jme3.system AppSettings)
+   (com.jme3.asset AssetManager)
+   (com.jme3.font BitmapText)))
 
 
 (defonce states (atom {}))
@@ -44,9 +46,13 @@
      (Vector3f. x y z))))
 
 
+(defn detach-all-child [^Node node]
+  (doto node (.detachAllChildren)))
+
+
 (defn clear [^SimpleApplication app]
   (let [root-node (.getRootNode app)]
-    (.detachAllChildren root-node)
+    (detach-all-child root-node)
     (.clear (.getLocalLightList root-node))
     root-node))
 
@@ -56,8 +62,20 @@
   (init-fn app))
 
 
-(defn load-model [asset-manager path]
+(defn load-model [^AssetManager asset-manager path]
   (.loadModel asset-manager path))
+
+
+(defn load-texture [^AssetManager asset-manager path]
+  (.loadTexture asset-manager path))
+
+
+(defn load-font [^AssetManager asset-manager path]
+  (.loadFont asset-manager path))
+
+
+(defn bitmap-text [gui-font right-to-left]
+  (BitmapText. gui-font right-to-left))
 
 
 (defn box [x y z]
@@ -97,12 +115,20 @@
   (.getRootNode app))
 
 
+(defn gui-node [app]
+  (.getGuiNode app))
+
+
 (defn node [name]
   (Node. name))
 
 
 (defn rotate [spatial x y z]
   (.rotate spatial x y z))
+
+
+(defn scale [spatial x y z]
+  (.scale spatial x y z))
 
 
 ;;TODO (set* (material 1) ..) not working, because obj arg is list.
