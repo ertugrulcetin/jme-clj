@@ -25,8 +25,8 @@
     (-> red
         (set* :local-translation (vec3 1 3 1))
         (set* :material mat2))
+    (attach-child root-node pivot)
     (-> pivot
-        (#(attach-child root-node %))
         (attach-child blue)
         (attach-child red)
         (rotate 0.4 0.4 0))))
