@@ -18,6 +18,10 @@
 (def ^:dynamic *asset-manager* nil)
 
 
+(defn get-simple-app-states []
+  (::app @states))
+
+
 (defn app-settings [load-defaults? & {:keys [fullscreen?
                                              vsync?
                                              width
@@ -193,7 +197,7 @@
 
 
 (defn stop-app [app]
-  (reset! states {})
+  (clear app)
   (doto app .stop))
 
 
