@@ -10,20 +10,20 @@
   (let [asset-manager (get-manager app :asset)
         root-node     (root-node app)
         mat-default   (material asset-manager "Common/MatDefs/Misc/ShowNormals.j3md")
-        teapot        (load-model asset-manager "Models/Teapot/Teapot.obj")
+        teapot        (load-model "Models/Teapot/Teapot.obj")
         teapot        (set* teapot :material mat-default)
         root-node     (attach-child root-node teapot)
         ;; Create a wall with a simple texture from test_data
         box           (box 2.5 2.5 1.0)
         mat-brick     (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")
-        texture       (load-texture asset-manager "Textures/Terrain/BrickWall/BrickWall.jpg")
+        texture       (load-texture "Textures/Terrain/BrickWall/BrickWall.jpg")
         mat-brick     (set* mat-brick :texture "ColorMap" texture)
         wall          (geo "Box" box)
         wall          (-> wall (set* :material mat-brick) (set* :local-translation 2.0 -2.5 0.0))
         root-node     (attach-child root-node wall)
         ;; Display a line of text with a default font
         gui-node      (-> app gui-node detach-all-child)
-        gui-font      (load-font asset-manager "Interface/Fonts/Default.fnt")
+        gui-font      (load-font "Interface/Fonts/Default.fnt")
         size          (-> gui-font (get* :char-set) (get* :rendered-size))
         hello-text    (bitmap-text gui-font false)
         hello-text    (-> hello-text
@@ -32,7 +32,7 @@
                           (set* :local-translation 300 (get* hello-text :line-height) 0))]
     (attach-child gui-node hello-text)
     ; Load a model from test_data (OgreXML + material + texture)
-    (-> (load-model asset-manager "Models/Ninja/Ninja.mesh.xml")
+    (-> (load-model "Models/Ninja/Ninja.mesh.xml")
         (scale 0.05 0.05 0.05)
         (rotate 0.0 -3.0 0.0)
         (set* :local-translation 0.0 -5.0 -2.0)

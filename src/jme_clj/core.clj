@@ -16,6 +16,8 @@
 
 (defonce states (atom {}))
 
+(def ^:dynamic *asset-manager* nil)
+
 
 (defn app-settings [load-defaults? & {:keys [fullscreen?
                                              vsync?
@@ -63,16 +65,16 @@
   (init-fn app))
 
 
-(defn load-model [^AssetManager asset-manager path]
-  (.loadModel asset-manager path))
+(defn load-model [path]
+  (.loadModel *asset-manager* path))
 
 
-(defn load-texture [^AssetManager asset-manager path]
-  (.loadTexture asset-manager path))
+(defn load-texture [path]
+  (.loadTexture *asset-manager* path))
 
 
-(defn load-font [^AssetManager asset-manager path]
-  (.loadFont asset-manager path))
+(defn load-font [path]
+  (.loadFont *asset-manager* path))
 
 
 (defn bitmap-text [gui-font right-to-left]
@@ -171,9 +173,10 @@
   [name & {:keys [opts init update]}]
   `(defonce ~name (let [app# (proxy [SimpleApplication] []
                                (simpleInitApp []
-                                 (let [init-result# (~init ~'this)]
-                                   (when (map? init-result#)
-                                     (swap! states assoc ::app init-result#))))
+                                 (binding [*asset-manager* (get-manager ~'this :asset)]
+                                   (let [init-result# (~init ~'this)]
+                                     (when (map? init-result#)
+                                       (swap! states assoc ::app init-result#)))))
                                (simpleUpdate [tpf#]
                                  (let [update-result# ((or ~update
                                                            (constantly nil)) ~'this tpf#)]
