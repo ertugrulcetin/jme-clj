@@ -132,11 +132,10 @@
   (.scale spatial x y z))
 
 
-
 (defmacro set* [obj kw & args]
-  `(do
-     (~(symbol (csk/->camelCase (str ".set-" (name kw)))) ~obj ~@args)
-     ~obj))
+  `(let [result# (eval ~`(do ~obj))]
+     (~(symbol (csk/->camelCase (str ".set-" (name kw)))) result# ~@args)
+     result#))
 
 
 (defmacro get* [obj kw & args]
