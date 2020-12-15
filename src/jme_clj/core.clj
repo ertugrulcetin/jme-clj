@@ -10,7 +10,6 @@
    (com.jme3.scene Geometry Node Spatial)
    (com.jme3.scene.shape Box)
    (com.jme3.system AppSettings)
-   (com.jme3.asset AssetManager)
    (com.jme3.font BitmapText)))
 
 
