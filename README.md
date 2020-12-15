@@ -1,6 +1,10 @@
-# jm-clj
+# jme-clj
 
-A Clojure library designed to ... well, that part is up to you.
+A Clojure wrapper library for [jMonkeyEngine](https://github.com/jMonkeyEngine/jmonkeyengine). jMonkeyEngine is a 3D
+game engine for adventurous Java developers (now Clojure developers). It is open-source, cross-platform, and
+cutting-edge. Please check [jMonkeyEngine Wiki](https://wiki.jmonkeyengine.org/docs/3.3/documentation.html) if you would
+like to learn more about the engine. Also, there is [jMonkeyEngine Hub](https://hub.jmonkeyengine.org/) that you can
+ask/search for questions, the community is very responsive and friendly.
 
 ## Usage
 
