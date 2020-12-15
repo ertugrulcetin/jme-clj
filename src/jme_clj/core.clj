@@ -97,6 +97,15 @@
   (.getRootNode app))
 
 
+(defn node [name]
+  (Node. name))
+
+
+(defn rotate [spatial x y z]
+  (.rotate spatial x y z))
+
+
+;;TODO (set* (material 1) ..) not working, because obj arg is list.
 (defmacro set* [obj kw & args]
   `(do
      (~(symbol (csk/->camelCase (str ".set-" (name kw)))) ~obj ~@args)

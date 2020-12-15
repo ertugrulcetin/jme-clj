@@ -30,7 +30,7 @@
 
 
 (defsimpleapp app
-              :opts {:show-settings?       false
+              :opts {:show-settings?       true
                      :pause-on-lost-focus? false
                      :settings             {:load-defaults? true
                                             :title          "My JME Game"
@@ -43,6 +43,7 @@
 (comment
  (start-app app)
  (stop-app app)
+
  (re-init app init)
  (unbind-app #'app)
  @states
