@@ -4,12 +4,12 @@
    [kezban.core :as k])
   (:import
    (com.jme3.app SimpleApplication)
-   (com.jme3.scene.shape Box)
-   (com.jme3.scene Geometry Node Spatial)
+   (com.jme3.light DirectionalLight AmbientLight LightProbe PointLight SpotLight)
    (com.jme3.material Material)
    (com.jme3.math ColorRGBA Vector3f)
-   (com.jme3.system AppSettings)
-   (com.jme3.light DirectionalLight AmbientLight LightProbe PointLight SpotLight)))
+   (com.jme3.scene Geometry Node Spatial)
+   (com.jme3.scene.shape Box)
+   (com.jme3.system AppSettings)))
 
 
 (defonce states (atom {}))
@@ -152,7 +152,6 @@
 
 (defn simple-update [^SimpleApplication app tpf]
   (let [{:keys [counter]} (::app @states)]
-    #_(println "Counter: " counter)
     {:counter (inc counter)}))
 
 

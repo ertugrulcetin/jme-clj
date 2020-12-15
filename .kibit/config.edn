@@ -1,0 +1,12 @@
+{
+ :exclusions [[(< ?x 0) (neg? ?x)]
+              [(> 0 ?x) (neg? ?x)]
+              [(< 0 ?x) (pos? ?x)]
+              [(> ?x 0) (pos? ?x)]]
+
+ :custom     [;You can write custom rules here, please check: https://github.com/Pisano/kibit/tree/master/kibit/src/kibit/rules
+              [(reduce ?r (map ?m (filter ?f ?form))) (->> ?form (filter ?f) (map ?m) (reduce ?r))]
+              [(map ?m (filter ?f ?form)) (->> ?form (filter ?f) (map ?m))]
+              [(< 0 ?x) (> ?x 0)]
+              [(> 0 ?x) (< ?x 0)]]
+ }

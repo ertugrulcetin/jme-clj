@@ -13,3 +13,9 @@ pom.xml.asc
 .idea
 *.iml
 *.dylib
+.eastwood
+.clj-kondo/.cache
+.lein-repl-history
+.DS_Store
+*.log
+.m2
