@@ -29,12 +29,10 @@
         hello-text    (-> hello-text
                           (set* :size size)
                           (set* :text "Hello World")
-                          (set* :local-translation 300 (get* hello-text :line-height) 0))
-        gui-node      (attach-child gui-node hello-text)
-        ; Load a model from test_data (OgreXML + material + texture)
-        ninja         (load-model asset-manager "Models/Ninja/Ninja.mesh.xml")
-        _             (.setMoveSpeed (.getFlyByCamera app) 20)]
-    (-> ninja
+                          (set* :local-translation 300 (get* hello-text :line-height) 0))]
+    (attach-child gui-node hello-text)
+    ; Load a model from test_data (OgreXML + material + texture)
+    (-> (load-model asset-manager "Models/Ninja/Ninja.mesh.xml")
         (scale 0.05 0.05 0.05)
         (rotate 0.0 -3.0 0.0)
         (set* :local-translation 0.0 -5.0 -2.0)
