@@ -11,8 +11,8 @@
                    SpotLight)
    (com.jme3.material Material)
    (com.jme3.math Vector3f)
-   (com.jme3.scene Geometry Node Spatial)
-   (com.jme3.scene.shape Box)
+   (com.jme3.scene Geometry Node Spatial Mesh)
+   (com.jme3.scene.shape Box Sphere)
    (com.jme3.system AppSettings)
    (com.jme3.font BitmapText)
    (com.jme3.input.controls ActionListener
@@ -20,10 +20,11 @@
                             KeyTrigger
                             MouseAxisTrigger
                             MouseButtonTrigger
-                            Trigger)))
+                            Trigger)
+   (com.jme3.util TangentBinormalGenerator)))
 
 
-(defonce ^:private states (atom {}))
+(defonce states (atom {}))
 (defonce ^:private listeners (atom []))
 (def ^:dynamic *asset-manager* nil)
 (def ^:dynamic *input-manager* nil)
@@ -128,6 +129,14 @@
     :spot (SpotLight.)))
 
 
+(defn sphere [x y z]
+  (Sphere. x y z))
+
+
+(defn generate [^Mesh mesh]
+  (TangentBinormalGenerator/generate mesh))
+
+
 (defn get-manager [app type]
   (case type
     :asset (.getAssetManager app)
@@ -200,6 +209,7 @@
     m))
 
 
+;;TODO we're still removing all listeners!
 (defn- register-input-mapping [m]
   (doseq [l @listeners]
     (.removeListener *input-manager* l)
