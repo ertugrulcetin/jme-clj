@@ -23,7 +23,7 @@
                             Trigger)))
 
 
-(defonce states (atom {}))
+(defonce ^:private states (atom {}))
 (defonce ^:private listeners (atom []))
 (def ^:dynamic *asset-manager* nil)
 (def ^:dynamic *input-manager* nil)
