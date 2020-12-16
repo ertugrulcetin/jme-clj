@@ -20,8 +20,12 @@
 (def ^:dynamic *input-manager* nil)
 
 
-(defn get-simple-app-states []
+(defn get-state []
   (::app @states))
+
+
+(defn update-state [f & args]
+  (apply swap! (into [states f] args)))
 
 
 (defn app-settings [load-defaults? & {:keys [fullscreen?
@@ -69,7 +73,9 @@
   (binding [*asset-manager* (.getAssetManager app)
             *input-manager* (.getInputManager app)]
     (clear app)
-    (init-fn app)))
+    (let [init-result (init-fn app)]
+      (when (map? init-result)
+        (swap! states assoc ::app init-result)))))
 
 
 (defn load-model [path]
@@ -228,6 +234,7 @@
                                (simpleInitApp []
                                  (binding [*asset-manager* (get-manager ~'this :asset)
                                            *input-manager* (get-manager ~'this :input)]
+                                   ;;re-init and this block has to be same.
                                    (let [init-result# (~init ~'this)]
                                      (when (map? init-result#)
                                        (swap! states assoc ::app init-result#)))))

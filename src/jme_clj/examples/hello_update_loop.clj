@@ -22,7 +22,7 @@
 
 (defn simple-update [^SimpleApplication app tpf]
   ;; also can be accessed like (::jme/app @states)
-  (let [{:keys [player]} (get-simple-app-states)]
+  (let [{:keys [player]} (get-state)]
     (rotate player 0 (* 2 tpf) 0)))
 
 

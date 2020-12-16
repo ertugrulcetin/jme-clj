@@ -11,7 +11,9 @@
 (def action-listener
   (create-action-listener
    (fn [name pressed? tpf]
-     (println "Ertus: " name))))
+     (when (and (= name "Pause")
+                (not pressed?))
+       (update-state update :running? not)))))
 
 
 (def analog-listener
@@ -39,7 +41,8 @@
     (set* mat :color "Color" ColorRGBA/Blue)
     (set* player :material mat)
     (attach-child root-node player)
-    (init-keys)))
+    (init-keys)
+    {:player player :running? true}))
 
 
 (defsimpleapp app :init init)
