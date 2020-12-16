@@ -259,10 +259,6 @@
   (doto app (.stop true)))
 
 
-(defn re-start [app]
-  (doto app .restart))
-
-
 (defn unbind-app
   "Should be used for development purposes. (unbind-app #'my-ns/app)
    After calling `unbind-app`, `app` can be re-defined using `defsimpleapp`"

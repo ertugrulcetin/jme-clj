@@ -11,14 +11,22 @@
 (def action-listener
   (create-action-listener
    (fn [name pressed? tpf]
-     (when (and (= name "Pause")
-                (not pressed?))
+     (when (and (= name "Pause") (not pressed?))
        (update-state update :running? not)))))
 
 
 (def analog-listener
   (create-analog-listener
-   (fn [name value tpf])))
+   (fn [name value tpf]
+     (let [speed 1.0
+           {:keys [player running?]} (get-state)
+           v     (get* player :local-translation)]
+       (when running?
+         (case name
+           "Rotate" (rotate player 0 (* value speed) 0)
+           "Right" (set* player :local-translation (+ (.-x v) (* value speed)) (.-y v) (.-z v))
+           "Left" (set* player :local-translation (- (.-x v) (* value speed)) (.-y v) (.-z v))
+           (println "Press P to unpause.")))))))
 
 
 (defn- init-keys []
@@ -51,7 +59,6 @@
 (comment
  (start-app app)
  (stop-app app)
- (re-start app)
 
  (re-init app init)
 
