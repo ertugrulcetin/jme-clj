@@ -10,12 +10,13 @@
    (com.jme3.scene Geometry Node Spatial)
    (com.jme3.scene.shape Box)
    (com.jme3.system AppSettings)
-   (com.jme3.font BitmapText)))
+   (com.jme3.font BitmapText)
+   (com.jme3.input.controls KeyTrigger Trigger MouseButtonTrigger MouseAxisTrigger)))
 
 
 (defonce states (atom {}))
-
 (def ^:dynamic *asset-manager* nil)
+(def ^:dynamic *input-manager* nil)
 
 
 (defn get-simple-app-states []
@@ -162,6 +163,25 @@
   (doto spatial (.removeLight light)))
 
 
+(defn key-trigger [code]
+  (KeyTrigger. code))
+
+
+(defn mouse-trigger [code]
+  (MouseButtonTrigger. code))
+
+
+(defn mouse-ax-trigger [code negative?]
+  (MouseAxisTrigger. code negative?))
+
+
+(defn create-input-mapping
+  [m]
+  (doseq [[k v] m]
+    (.addMapping *input-manager* k (into-array Trigger (if (vector? v) v [v])))
+    m))
+
+
 (defmacro letj
   [bindings & body]
   (k/assert-all
@@ -176,7 +196,8 @@
   [name & {:keys [opts init update]}]
   `(defonce ~name (let [app# (proxy [SimpleApplication] []
                                (simpleInitApp []
-                                 (binding [*asset-manager* (get-manager ~'this :asset)]
+                                 (binding [*asset-manager* (get-manager ~'this :asset)
+                                           *input-manager* (get-manager ~'this :input)]
                                    (let [init-result# (~init ~'this)]
                                      (when (map? init-result#)
                                        (swap! states assoc ::app init-result#)))))
