@@ -21,11 +21,13 @@
                             MouseAxisTrigger
                             MouseButtonTrigger
                             Trigger)
-   (com.jme3.util TangentBinormalGenerator)))
+   (com.jme3.util TangentBinormalGenerator)
+   (com.jme3.animation AnimEventListener AnimControl AnimChannel)))
 
 
 (defonce states (atom {}))
 (defonce ^:private listeners (atom []))
+(def ^:dynamic *root-node* nil)
 (def ^:dynamic *asset-manager* nil)
 (def ^:dynamic *input-manager* nil)
 
@@ -79,15 +81,6 @@
     root-node))
 
 
-(defn re-init [app init-fn]
-  (binding [*asset-manager* (.getAssetManager app)
-            *input-manager* (.getInputManager app)]
-    (clear app)
-    (let [init-result (init-fn app)]
-      (when (map? init-result)
-        (swap! states assoc ::app init-result)))))
-
-
 (defn load-model [path]
   (.loadModel *asset-manager* path))
 
@@ -118,6 +111,10 @@
 
 (defn attach-child [^Node node ^Spatial s]
   (doto node (.attachChild s)))
+
+
+(defn add-to-root [node]
+  (doto *root-node* (.attachChild node)))
 
 
 (defn light [type]
@@ -190,6 +187,10 @@
   (doto spatial (.removeLight light)))
 
 
+(defn add-light-to-root [light]
+  (add-light *root-node* light))
+
+
 (defn key-trigger [code]
   (KeyTrigger. code))
 
@@ -237,6 +238,24 @@
       (f name value tpf))))
 
 
+(defn create-anim-listener [on-cycle-done on-anim-change]
+  (proxy [AnimEventListener] []
+    (onAnimCycleDone [^AnimControl control ^AnimChannel channel ^String name]
+      (on-cycle-done control channel name))
+    (onAnimChange [^AnimControl control ^AnimChannel channel ^String name]
+      (on-anim-change control channel name))))
+
+
+;;TODO check here, we might need to remove old ones
+;;TODO like in input listeners to avoid duplication!
+(defn add-anim-listener [control listener]
+  (.addListener control listener))
+
+
+(defn create-channel [control]
+  (.createChannel control))
+
+
 (defmacro letj
   [bindings & body]
   (k/assert-all
@@ -247,12 +266,23 @@
      (merge ~@(map #(hash-map (keyword %) %) (take-nth 2 bindings)))))
 
 
+(defn re-init [app init-fn]
+  (binding [*asset-manager* (.getAssetManager app)
+            *input-manager* (.getInputManager app)
+            *root-node*     (root-node app)]
+    (clear app)
+    (let [init-result (init-fn app)]
+      (when (map? init-result)
+        (swap! states assoc ::app init-result)))))
+
+
 (defmacro defsimpleapp
   [name & {:keys [opts init update]}]
   `(defonce ~name (let [app# (proxy [SimpleApplication] []
                                (simpleInitApp []
                                  (binding [*asset-manager* (get-manager ~'this :asset)
-                                           *input-manager* (get-manager ~'this :input)]
+                                           *input-manager* (get-manager ~'this :input)
+                                           *root-node*     (root-node ~'this)]
                                    ;;re-init and this block has to be same.
                                    (let [init-result# (~init ~'this)]
                                      (when (map? init-result#)
