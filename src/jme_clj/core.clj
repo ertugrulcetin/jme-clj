@@ -11,10 +11,11 @@
    (com.jme3.scene.shape Box)
    (com.jme3.system AppSettings)
    (com.jme3.font BitmapText)
-   (com.jme3.input.controls KeyTrigger Trigger MouseButtonTrigger MouseAxisTrigger)))
+   (com.jme3.input.controls KeyTrigger Trigger MouseButtonTrigger MouseAxisTrigger ActionListener AnalogListener)))
 
 
 (defonce states (atom {}))
+(defonce ^:private listeners (atom []))
 (def ^:dynamic *asset-manager* nil)
 (def ^:dynamic *input-manager* nil)
 
@@ -60,13 +61,16 @@
   (let [root-node (.getRootNode app)]
     (detach-all-child root-node)
     (.clear (.getLocalLightList root-node))
+    (some-> app .getInputManager .clearRawInputListeners)
     (reset! states {})
     root-node))
 
 
 (defn re-init [app init-fn]
-  (clear app)
-  (init-fn app))
+  (binding [*asset-manager* (.getAssetManager app)
+            *input-manager* (.getInputManager app)]
+    (clear app)
+    (init-fn app)))
 
 
 (defn load-model [path]
@@ -175,11 +179,38 @@
   (MouseAxisTrigger. code negative?))
 
 
-(defn create-input-mapping
-  [m]
+(defn- create-input-mapping [m]
   (doseq [[k v] m]
+    (.deleteMapping *input-manager* k)
     (.addMapping *input-manager* k (into-array Trigger (if (vector? v) v [v])))
     m))
+
+
+(defn- register-input-mapping [m]
+  (doseq [l @listeners]
+    (.removeListener *input-manager* l)
+    (reset! listeners []))
+  (doseq [[k v] m]
+    (.addListener *input-manager* k (into-array String (if (vector? v) v [v])))
+    (swap! listeners conj k)
+    m))
+
+
+(defn apply-input-mapping [{:keys [triggers listeners]}]
+  (create-input-mapping triggers)
+  (register-input-mapping listeners))
+
+
+(defn create-action-listener [f]
+  (proxy [ActionListener] []
+    (onAction [name pressed? tpf]
+      (f name pressed? tpf))))
+
+
+(defn create-analog-listener [f]
+  (proxy [AnalogListener] []
+    (onAnalog [name value tpf]
+      (f name value tpf))))
 
 
 (defmacro letj
@@ -219,7 +250,11 @@
 
 (defn stop-app [app]
   (clear app)
-  (doto app .stop))
+  (doto app (.stop true)))
+
+
+(defn re-start [app]
+  (doto app .restart))
 
 
 (defn unbind-app
@@ -231,5 +266,5 @@
     (.unbindRoot v)))
 
 
-(defn running? [app]
+(defn app-running? [app]
   (boolean (some-> app .getContext .isCreated)))
