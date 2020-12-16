@@ -61,7 +61,6 @@
   (let [root-node (.getRootNode app)]
     (detach-all-child root-node)
     (.clear (.getLocalLightList root-node))
-    (some-> app .getInputManager .clearRawInputListeners)
     (reset! states {})
     root-node))
 

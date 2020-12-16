@@ -11,7 +11,7 @@
 (def action-listener
   (create-action-listener
    (fn [name pressed? tpf]
-     (println "Can: " name))))
+     (println "Ertus: " name))))
 
 
 (def analog-listener
