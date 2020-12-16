@@ -11,6 +11,7 @@ The engine is used by several commercial game studios and computer-science cours
 ![jME3 Games Mashup](https://i.imgur.com/nF8WOW6.jpg)
 
 ## Usage
+Please note that the library still on development (pre-alpha) stage, so there might be some breaking changes.
 
 FIXME
 
