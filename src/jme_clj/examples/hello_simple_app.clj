@@ -10,11 +10,10 @@
   (let [box           (box 1 1 1)
         geom          (geo "Box" box)
         asset-manager (get-manager :asset)
-        mat           (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")
-        root-node     (root-node)]
+        mat           (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")]
     (set* mat :color "Color" ColorRGBA/Blue)
     (set* geom :material mat)
-    (attach-child root-node geom)))
+    (add-to-root geom)))
 
 
 (defsimpleapp app :init init)
