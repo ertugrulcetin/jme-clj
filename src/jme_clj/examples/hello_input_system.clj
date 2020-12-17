@@ -3,7 +3,6 @@
   (:require
    [jme-clj.core :refer :all])
   (:import
-   (com.jme3.app SimpleApplication)
    (com.jme3.math ColorRGBA)
    (com.jme3.input KeyInput MouseInput)))
 
@@ -40,15 +39,14 @@
                 analog-listener ["Left" "Right" "Rotate"]}}))
 
 
-(defn init [^SimpleApplication app]
+(defn init []
   (let [box           (box 1 1 1)
         player        (geo "Box" box)
-        asset-manager (get-manager app :asset)
-        mat           (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")
-        root-node     (root-node app)]
-    (set* mat :color "Color" ColorRGBA/Blue)
+        asset-manager (get-manager :asset)
+        mat           (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")]
+    (set* mat :color "Color" ColorRGBA/Red)
     (set* player :material mat)
-    (attach-child root-node player)
+    (add-to-root player)
     (init-keys)
     {:player player :running? true}))
 

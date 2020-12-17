@@ -37,7 +37,7 @@
 ;;A cube object for target practice
 (defn make-cube [name x y z]
   (let [box (box 1 1 1)
-        mat (-> jme/*asset-manager*
+        mat (-> (get-manager :asset)
                 (material "Common/MatDefs/Misc/Unshaded.j3md")
                 (set* :color "Color" (ColorRGBA/randomColor)))]
     (-> (geo name box)
@@ -48,7 +48,7 @@
 ;;A floor to show that the "shot" can go through several objects.
 (defn make-floor []
   (let [box (box 15 0.2 15)
-        mat (-> jme/*asset-manager*
+        mat (-> (get-manager :asset)
                 (material "Common/MatDefs/Misc/Unshaded.j3md")
                 (set* :color "Color" ColorRGBA/Gray))]
     (-> (geo "the Floor" box)
@@ -92,20 +92,20 @@
               (+ (/ (get* settings :height) 2)
                  (/ (get* ch :line-height) 2))
               0)
-        (#(attach-child jme/*gui-node* %)))))
+        (#(attach-child (gui-node) %)))))
 
 
 ;;A red ball that marks the last spot that was "hit" by the "shot".
 (defn- init-mark []
   (let [sphere (sphere 30 30 0.2)
         mark   (geo "BOOM!" sphere)
-        mat    (-> jme/*asset-manager*
+        mat    (-> (get-manager :asset)
                    (material "Common/MatDefs/Misc/Unshaded.j3md")
                    (set* :color "Color" ColorRGBA/Red))]
     (set* mark :material mat)))
 
 
-(defn init [^SimpleApplication app]
+(defn init []
   ;;`letj` returns hash-map with key-val pairs that extracted from bindings
   ;; ignores `_` bindings. So in this case it returns;
   ;; {:mark mark
@@ -117,7 +117,7 @@
          _ (init-cross-hairs)
          mark (init-mark)]
         (-> shootables
-            add-to-root
+            (add-to-root)
             (attach-child (make-cube "a Dragon" -2 0 1))
             (attach-child (make-cube "a tin can" 1 -2 0))
             (attach-child (make-cube "the Sheriff" 0 1 -2))

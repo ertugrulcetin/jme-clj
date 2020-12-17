@@ -3,13 +3,11 @@
   (:require
    [jme-clj.core :refer :all])
   (:import
-   (com.jme3.app SimpleApplication)
    (com.jme3.math ColorRGBA)))
 
 
-(defn init [^SimpleApplication app]
-  (let [asset-manager (get-manager app :asset)
-        root-node     (root-node app)
+(defn init []
+  (let [asset-manager (get-manager :asset)
         box1          (box 1 1 1)
         blue          (geo "Box" box1)
         mat1          (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")
@@ -25,8 +23,8 @@
     (-> red
         (set* :local-translation (vec3 1 3 1))
         (set* :material mat2))
-    (attach-child root-node pivot)
     (-> pivot
+        (add-to-root)
         (attach-child blue)
         (attach-child red)
         (rotate 0.4 0.4 0))))

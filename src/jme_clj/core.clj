@@ -29,10 +29,6 @@
 (defonce states (atom {}))
 (defonce ^:private listeners (atom []))
 (def ^:dynamic *app* nil)
-(def ^:dynamic *root-node* nil)
-(def ^:dynamic *gui-node* nil)
-(def ^:dynamic *asset-manager* nil)
-(def ^:dynamic *input-manager* nil)
 
 
 (defn get-state []
@@ -84,16 +80,36 @@
     root-node))
 
 
+(defn get-manager [type]
+  (case type
+    :asset (.getAssetManager *app*)
+    :input (.getInputManager *app*)
+    :app-state (.getStateManager *app*)
+    :render (.getRenderManager *app*)))
+
+
+(defn root-node []
+  (.getRootNode *app*))
+
+
+(defn gui-node []
+  (.getGuiNode *app*))
+
+
+(defn view-port []
+  (.getViewPort *app*))
+
+
 (defn load-model [path]
-  (.loadModel *asset-manager* path))
+  (.loadModel (get-manager :asset) path))
 
 
 (defn load-texture [path]
-  (.loadTexture *asset-manager* path))
+  (.loadTexture (get-manager :asset) path))
 
 
 (defn load-font [path]
-  (.loadFont *asset-manager* path))
+  (.loadFont (get-manager :asset) path))
 
 
 (defn bitmap-text [gui-font right-to-left]
@@ -117,12 +133,12 @@
 
 
 (defn add-to-root [node]
-  (.attachChild *root-node* node)
+  (.attachChild (root-node) node)
   node)
 
 
 (defn remove-from-root [node]
-  (.detachChild *root-node* node)
+  (.detachChild (root-node) node)
   node)
 
 
@@ -141,22 +157,6 @@
 
 (defn generate [^Mesh mesh]
   (TangentBinormalGenerator/generate mesh))
-
-
-(defn get-manager [app type]
-  (case type
-    :asset (.getAssetManager app)
-    :input (.getInputManager app)
-    :app-state (.getStateManager app)
-    :render (.getRenderManager app)))
-
-
-(defn root-node [app]
-  (.getRootNode app))
-
-
-(defn gui-node [app]
-  (.getGuiNode app))
 
 
 (defn node [name]
@@ -200,7 +200,7 @@
 
 
 (defn add-light-to-root [light]
-  (add-light *root-node* light))
+  (add-light (root-node) light))
 
 
 (defn key-trigger [code]
@@ -217,19 +217,21 @@
 
 (defn- create-input-mapping [m]
   (doseq [[k v] m]
-    (.deleteMapping *input-manager* k)
-    (.addMapping *input-manager* k (into-array Trigger (if (vector? v) v [v])))
-    m))
+    (let [input-manager (get-manager :input)]
+      (.deleteMapping input-manager k)
+      (.addMapping input-manager k (into-array Trigger (if (vector? v) v [v])))
+      m)))
 
 
 ;;TODO we're still removing all listeners!
 (defn- register-input-mapping [m]
-  (doseq [l @listeners]
-    (.removeListener *input-manager* l)
-    (reset! listeners []))
-  (doseq [[k v] m]
-    (.addListener *input-manager* k (into-array String (if (vector? v) v [v])))
-    (swap! listeners conj k)
+  (let [input-manager (get-manager :input)]
+    (doseq [l @listeners]
+      (.removeListener input-manager l)
+      (reset! listeners []))
+    (doseq [[k v] m]
+      (.addListener input-manager k (into-array String (if (vector? v) v [v])))
+      (swap! listeners conj k))
     m))
 
 
@@ -309,13 +311,9 @@
 
 
 (defn re-init [app init-fn]
-  (binding [*app*           app
-            *asset-manager* (get-manager app :asset)
-            *input-manager* (get-manager app :input)
-            *root-node*     (root-node app)
-            *gui-node*      (gui-node app)]
+  (binding [*app* app]
     (clear app)
-    (let [init-result (init-fn app)]
+    (let [init-result (init-fn)]
       (when (map? init-result)
         (swap! states assoc ::app init-result)))))
 
@@ -324,18 +322,14 @@
   [name & {:keys [opts init update]}]
   `(defonce ~name (let [app# (proxy [SimpleApplication] []
                                (simpleInitApp []
-                                 (binding [*app*           ~'this
-                                           *asset-manager* (get-manager ~'this :asset)
-                                           *input-manager* (get-manager ~'this :input)
-                                           *root-node*     (root-node ~'this)
-                                           *gui-node*      (gui-node ~'this)]
+                                 (binding [*app* ~'this]
                                    ;;re-init and this block has to be same.
-                                   (let [init-result# (~init ~'this)]
+                                   (let [init-result# (~init)]
                                      (when (map? init-result#)
                                        (swap! states assoc ::app init-result#)))))
                                (simpleUpdate [tpf#]
                                  (let [update-result# ((or ~update
-                                                           (constantly nil)) ~'this tpf#)]
+                                                           (constantly nil)) tpf#)]
                                    (when (map? update-result#)
                                      (swap! states update ::app merge update-result#)))))]
                     (when (seq ~opts)
@@ -349,6 +343,8 @@
   (doto app .start))
 
 
+;;TODO stop app makes input not working after re-start
+;;TODO try to find a way
 (defn stop-app [app]
   (clear app)
   (doto app (.stop true)))

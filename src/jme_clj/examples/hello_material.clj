@@ -3,17 +3,15 @@
   (:require
    [jme-clj.core :refer :all])
   (:import
-   (com.jme3.app SimpleApplication)
    (com.jme3.material RenderState$BlendMode)
    (com.jme3.renderer.queue RenderQueue$Bucket)
    (com.jme3.scene.shape Sphere$TextureMode)
    (com.jme3.math ColorRGBA)))
 
 
-(defn init [^SimpleApplication app]
+(defn init []
   ;;A simple textured cube -- in good MIP map quality.
-  (let [root-node     (root-node app)
-        asset-manager (get-manager app :asset)
+  (let [asset-manager (get-manager :asset)
         cube-1-mesh   (box 1 1 1)
         cube-1-geo    (geo "My Textured Box" cube-1-mesh)
         cube-1-mat    (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")
@@ -31,14 +29,14 @@
         sphere-mat    (material asset-manager "Common/MatDefs/Light/Lighting.j3md")]
     (set* cube-1-mat :texture "ColorMap" cube-1-tex)
     (set* cube-1-geo :material cube-1-mat)
-    (attach-child root-node cube-1-geo)
+    (add-to-root cube-1-geo)
 
     (set* cube-2-mat :texture "ColorMap" (load-texture "Textures/ColoredTex/Monkey.png"))
     (-> cube-2-mat (get* :additional-render-state) (set* :blend-mode RenderState$BlendMode/Alpha))
     (-> cube-2-geo
         (set* :queue-bucket RenderQueue$Bucket/Transparent)
         (set* :material cube-2-mat)
-        (#(attach-child root-node %)))
+        (add-to-root))
 
     (-> sphere-mat
         ;; had to wrap with `float`, interop could not find the correct method
@@ -52,12 +50,12 @@
         (set* :material sphere-mat)
         (set* :local-translation 0 2 -2)
         (rotate 1.6 0 0)
-        (#(attach-child root-node %)))
+        (add-to-root))
 
     (-> (light :directional)
         (set* :direction (vec3 1 0 -2 :normalize))
         (set* :color ColorRGBA/White)
-        (#(add-light root-node %)))))
+        (add-light-to-root))))
 
 
 (defsimpleapp app :init init)

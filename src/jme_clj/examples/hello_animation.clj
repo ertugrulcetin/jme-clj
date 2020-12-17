@@ -37,11 +37,11 @@
     :listeners {action-listener "Walk"}}))
 
 
-(defn init [^SimpleApplication app]
+(defn init []
   (let [player  (load-model "Models/Oto/OtoOldAnim.j3o")
         control (get* player :control AnimControl)
         channel (create-channel control)]
-    (set* (.getViewPort app) :background-color ColorRGBA/LightGray)
+    (set* (view-port) :background-color ColorRGBA/LightGray)
     (-> (light :directional)
         (set* :direction (vec3 -0.1 -1 -1 :normalize))
         (add-light-to-root))

@@ -3,17 +3,16 @@
   (:require
    [jme-clj.core :refer :all])
   (:import
-   (com.jme3.app SimpleApplication)
    (com.jme3.math ColorRGBA)))
 
 
-(defn init [^SimpleApplication app]
+(defn init []
   (let [box           (box 1 1 1)
         geom          (geo "Box" box)
-        asset-manager (get-manager app :asset)
+        asset-manager (get-manager :asset)
         mat           (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")
-        root-node     (root-node app)]
-    (set* mat :color "Color" ColorRGBA/Blue)
+        root-node     (root-node)]
+    (set* mat :color "Color" ColorRGBA/Red)
     (set* geom :material mat)
     (attach-child root-node geom)))
 

@@ -1,14 +1,11 @@
 (ns jme-clj.examples.hello-asset
   "Clojure version of https://wiki.jmonkeyengine.org/docs/3.3/tutorials/beginner/hello_asset.html"
-  (:require
-   [jme-clj.core :refer :all])
-  (:import
-   (com.jme3.app SimpleApplication)))
+  (:require [jme-clj.core :refer :all]))
 
 
-(defn init [^SimpleApplication app]
-  (let [asset-manager (get-manager app :asset)
-        root-node     (root-node app)
+(defn init []
+  (let [asset-manager (get-manager :asset)
+        root-node     (root-node)
         mat-default   (material asset-manager "Common/MatDefs/Misc/ShowNormals.j3md")
         teapot        (load-model "Models/Teapot/Teapot.obj")
         teapot        (set* teapot :material mat-default)
@@ -22,7 +19,7 @@
         wall          (-> wall (set* :material mat-brick) (set* :local-translation 2.0 -2.5 0.0))
         root-node     (attach-child root-node wall)
         ;; Display a line of text with a default font
-        gui-node      (-> app gui-node detach-all-child)
+        gui-node      (detach-all-child (gui-node))
         gui-font      (load-font "Interface/Fonts/Default.fnt")
         size          (-> gui-font (get* :char-set) (get* :rendered-size))
         hello-text    (bitmap-text gui-font false)
@@ -36,11 +33,11 @@
         (scale 0.05 0.05 0.05)
         (rotate 0.0 -3.0 0.0)
         (set* :local-translation 0.0 -5.0 -2.0)
-        (#(attach-child root-node %)))
+        (add-to-root))
     ;; You must add a light to make the model visible
     (-> (light :directional)
         (set* :direction (vec3 -0.1 -0.7 -1.0))
-        (#(add-light root-node %)))))
+        (add-light-to-root))))
 
 
 (defsimpleapp app :init init)

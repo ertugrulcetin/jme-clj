@@ -3,24 +3,23 @@
   (:require
    [jme-clj.core :refer :all])
   (:import
-   (com.jme3.app SimpleApplication)
    (com.jme3.math ColorRGBA)))
 
 
-(defn init [^SimpleApplication app]
+(defn init []
   (let [box           (box 1 1 1)
         player        (geo "blue cube" box)
-        asset-manager (get-manager app :asset)
+        asset-manager (get-manager :asset)
         mat           (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")]
     (set* mat :color "Color" ColorRGBA/Blue)
     (set* player :material mat)
-    (attach-child (root-node app) player)
+    (add-to-root player)
     ;; When we return hash map, it will be added to jme-clj.core/states with key :jme-clj.core/app
     ;; so we can access from everywhere, for example inside `update` fn etc.
     {:player player}))
 
 
-(defn simple-update [^SimpleApplication app tpf]
+(defn simple-update [tpf]
   ;; also can be accessed like (::jme/app @states)
   (let [{:keys [player]} (get-state)]
     (rotate player 0 (* 2 tpf) 0)))
