@@ -10,6 +10,7 @@
   (create-action-listener
    (fn [name pressed? tpf]
      (when (and (= name "Pause") (not pressed?))
+       ;;TODO fix here
        (update-state update :running? not)))))
 
 

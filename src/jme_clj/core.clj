@@ -1,7 +1,8 @@
 (ns jme-clj.core
   (:require
    [camel-snake-kebab.core :as csk]
-   [kezban.core :as k])
+   [kezban.core :as k]
+   [clojure.set :as set])
   (:import
    (clojure.lang Var)
    (com.jme3.animation AnimEventListener AnimControl AnimChannel)
@@ -22,12 +23,16 @@
                    PointLight
                    SpotLight)
    (com.jme3.material Material)
-   (com.jme3.math Vector3f Ray)
+   (com.jme3.math Vector3f Ray ColorRGBA)
    (com.jme3.scene Geometry Node Spatial Mesh)
    (com.jme3.scene.shape Box Sphere)
    (com.jme3.system AppSettings)
    (com.jme3.util TangentBinormalGenerator)
-   (java.util Collection)))
+   (com.jme3.app.state AppStateManager)
+   (com.jme3.bullet BulletAppState)
+   (com.jme3.bullet.util CollisionShapeFactory)
+   (com.jme3.bullet.control RigidBodyControl CharacterControl)
+   (com.jme3.bullet.collision.shapes CapsuleCollisionShape)))
 
 (set! *warn-on-reflection* true)
 
@@ -45,6 +50,12 @@
 
 (defn update-state [f & args]
   (apply swap! (into [states f] args)))
+
+
+(defn set-state [kws v]
+  (let [kws (if (vector? kws) kws [kws])
+        kws (into [::app] kws)]
+    (swap! states assoc-in kws v)))
 
 
 (defn app-settings [load-defaults? & {:keys [fullscreen?
@@ -67,7 +78,9 @@
     settings))
 
 
-(defn ^Vector3f vec3
+(defn vec3
+  ([]
+   (Vector3f.))
   ([x y z]
    (vec3 x y z false))
   ([x y z normalize]
@@ -84,7 +97,6 @@
   (let [root-node (.getRootNode app)]
     (detach-all-child root-node)
     (.clear (.getLocalLightList root-node))
-    (reset! states {})
     root-node))
 
 
@@ -108,6 +120,22 @@
   (.getViewPort *app*))
 
 
+(defn bullet-app-state []
+  (BulletAppState.))
+
+
+(defn capsule-collision-shape [radius height axi]
+  (CapsuleCollisionShape. radius height axi))
+
+
+(defn add-control [^Spatial spatial control]
+  (doto spatial (.addControl control)))
+
+
+(defn character-control [shape step-height]
+  (CharacterControl. shape step-height))
+
+
 (defn load-model [path]
   (.loadModel ^AssetManager (get-manager :asset) ^String path))
 
@@ -124,6 +152,39 @@
   (BitmapText. gui-font right-to-left))
 
 
+(defn mult [^Vector3f v ^Float scalar]
+  (.mult v scalar))
+
+
+(defn mult-local [^Vector3f v ^Float scalar]
+  (.multLocal v scalar))
+
+
+(defn add-v3
+  ([^Vector3f v ^Vector3f v2]
+   (.add v v2))
+  ([^Vector3f v x y z]
+   (.add v x y z)))
+
+
+(defn add-v3-local
+  ([^Vector3f v ^Vector3f v2]
+   (.addLocal v v2))
+  ([^Vector3f v x y z]
+   (.addLocal v x y z)))
+
+
+(defn set-v3
+  ([^Vector3f v ^Vector3f v2]
+   (.set v v2))
+  ([^Vector3f v x y z]
+   (.set v x y z)))
+
+
+(defn negate [^Vector3f v]
+  (.negate v))
+
+
 (defn box [x y z]
   (Box. x y z))
 
@@ -134,6 +195,28 @@
 
 (defn material [asset-manager path]
   (Material. asset-manager path))
+
+
+(defn color-rgba [r g b a]
+  (ColorRGBA. r g b a))
+
+
+(defn register-locator [path locator]
+  (doto ^AssetManager (get-manager :asset)
+    (.registerLocator path locator)))
+
+
+(defn create-mesh-shape [spatial]
+  (CollisionShapeFactory/createMeshShape spatial))
+
+
+(defn rigid-body-control [shape mass]
+  (RigidBodyControl. shape mass))
+
+
+(defn attach [app-state]
+  (doto ^AppStateManager (get-manager :app-state)
+    (.attach app-state)))
 
 
 (defn attach-child [^Node node ^Spatial s]
@@ -190,6 +273,10 @@
 
 (defmacro get* [obj kw & args]
   `(~(symbol (csk/->camelCase (str ".get-" (name kw)))) ~obj ~@args))
+
+
+(defmacro call* [obj kw & args]
+  `(~(symbol (csk/->camelCase (str "." (name kw)))) ~obj ~@args))
 
 
 (defn map->app-settings [settings]
@@ -328,11 +415,12 @@
                                      (when (map? init-result#)
                                        (swap! states assoc ::app init-result#)))))
                                (simpleUpdate [tpf#]
-                                 (binding [*app* ~'this]
-                                   (let [update-result# ((or ~update
-                                                             (constantly nil)) tpf#)]
-                                     (when (map? update-result#)
-                                       (swap! states update ::app merge update-result#))))))]
+                                 (when (-> @states :initialized? false? not)
+                                   (binding [*app* ~'this]
+                                     (let [update-result# ((or ~update
+                                                               (constantly nil)) tpf#)]
+                                       (when (map? update-result#)
+                                         (swap! states update ::app merge update-result#)))))))]
                     (when (seq ~opts)
                       (some->> ~opts :show-settings? (.setShowSettings app#))
                       (some->> ~opts :pause-on-lost-focus? (.setPauseOnLostFocus app#))
@@ -353,10 +441,14 @@
 
 (defn re-init [app init-fn]
   (binding [*app* app]
+    (swap! states assoc :initialized? false)
     (clear app)
     (let [init-result (init-fn)]
-      (when (map? init-result)
-        (swap! states assoc ::app init-result)))))
+      (if (map? init-result)
+        (swap! states assoc
+               ::app init-result
+               :initialized? true)
+        (swap! states #(assoc (dissoc states %) :initialized? true) ::app)))))
 
 
 (defn unbind-app

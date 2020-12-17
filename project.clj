@@ -15,7 +15,7 @@
                  [org.jmonkeyengine/jme3-core ~jme-version]
                  [org.jmonkeyengine/jme3-plugins ~jme-version]
                  [org.jmonkeyengine/jme3-terrain ~jme-version]
-                 [org.jmonkeyengine/jme3-jbullet ~jme-version]
+                 [org.jmonkeyengine/jme3-bullet ~jme-version]
                  [org.jmonkeyengine/jme3-jogg ~jme-version]
                  [org.jmonkeyengine/jme3-jogl ~jme-version]
                  [org.jmonkeyengine/jme3-effects ~jme-version]
