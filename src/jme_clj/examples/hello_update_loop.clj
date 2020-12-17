@@ -16,7 +16,7 @@
     (set* player :material mat)
     (attach-child (root-node app) player)
     ;; When we return hash map, it will be added to jme-clj.core/states with key :jme-clj.core/app
-    ;; so we can access inside `update` fn
+    ;; so we can access from everywhere, for example inside `update` fn etc.
     {:player player}))
 
 

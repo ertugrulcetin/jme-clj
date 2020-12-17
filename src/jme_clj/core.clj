@@ -10,7 +10,7 @@
                    PointLight
                    SpotLight)
    (com.jme3.material Material)
-   (com.jme3.math Vector3f)
+   (com.jme3.math Vector3f Ray)
    (com.jme3.scene Geometry Node Spatial Mesh)
    (com.jme3.scene.shape Box Sphere)
    (com.jme3.system AppSettings)
@@ -22,12 +22,15 @@
                             MouseButtonTrigger
                             Trigger)
    (com.jme3.util TangentBinormalGenerator)
-   (com.jme3.animation AnimEventListener AnimControl AnimChannel)))
+   (com.jme3.animation AnimEventListener AnimControl AnimChannel)
+   (com.jme3.collision CollisionResults)))
 
 
 (defonce states (atom {}))
 (defonce ^:private listeners (atom []))
+(def ^:dynamic *app* nil)
 (def ^:dynamic *root-node* nil)
+(def ^:dynamic *gui-node* nil)
 (def ^:dynamic *asset-manager* nil)
 (def ^:dynamic *input-manager* nil)
 
@@ -114,7 +117,13 @@
 
 
 (defn add-to-root [node]
-  (doto *root-node* (.attachChild node)))
+  (.attachChild *root-node* node)
+  node)
+
+
+(defn remove-from-root [node]
+  (.detachChild *root-node* node)
+  node)
 
 
 (defn light [type]
@@ -158,8 +167,11 @@
   (.rotate spatial x y z))
 
 
-(defn scale [spatial x y z]
-  (.scale spatial x y z))
+(defn scale
+  ([spatial s]
+   (.scale spatial s))
+  ([spatial x y z]
+   (.scale spatial x y z)))
 
 
 (defmacro set* [obj kw & args]
@@ -221,29 +233,34 @@
     m))
 
 
-(defn apply-input-mapping [{:keys [triggers listeners]}]
+(defn apply-input-mapping [{:keys [triggers listeners] :as m}]
   (create-input-mapping triggers)
-  (register-input-mapping listeners))
+  (register-input-mapping listeners)
+  m)
 
 
 (defn create-action-listener [f]
-  (proxy [ActionListener] []
-    (onAction [name pressed? tpf]
-      (f name pressed? tpf))))
+  (let [f (bound-fn* f)]
+    (proxy [ActionListener] []
+      (onAction [name pressed? tpf]
+        (f name pressed? tpf)))))
 
 
 (defn create-analog-listener [f]
-  (proxy [AnalogListener] []
-    (onAnalog [name value tpf]
-      (f name value tpf))))
+  (let [f (bound-fn* f)]
+    (proxy [AnalogListener] []
+      (onAnalog [name value tpf]
+        (f name value tpf)))))
 
 
 (defn create-anim-listener [on-cycle-done on-anim-change]
-  (proxy [AnimEventListener] []
-    (onAnimCycleDone [^AnimControl control ^AnimChannel channel ^String name]
-      (on-cycle-done control channel name))
-    (onAnimChange [^AnimControl control ^AnimChannel channel ^String name]
-      (on-anim-change control channel name))))
+  (let [on-cycle-done  (bound-fn* on-cycle-done)
+        on-anim-change (bound-fn* on-anim-change)]
+    (proxy [AnimEventListener] []
+      (onAnimCycleDone [^AnimControl control ^AnimChannel channel ^String name]
+        (on-cycle-done control channel name))
+      (onAnimChange [^AnimControl control ^AnimChannel channel ^String name]
+        (on-anim-change control channel name)))))
 
 
 ;;TODO check here, we might need to remove old ones
@@ -263,13 +280,40 @@
    (even? (count bindings)) "an even number of forms in binding vector")
   `(let* ~(destructure bindings)
      ~@body
-     (merge ~@(map #(hash-map (keyword %) %) (take-nth 2 bindings)))))
+     (merge ~@(remove :_ (map #(hash-map (keyword %) %) (take-nth 2 bindings))))))
+
+
+(defn cam []
+  (.getCamera *app*))
+
+
+(defn fly-cam []
+  (.getFlyByCamera *app*))
+
+
+(defn collision-results []
+  (CollisionResults.))
+
+
+(defn ray [origin direction]
+  (Ray. origin direction))
+
+
+(defn collide-with [o collidable results]
+  (.collideWith o collidable results)
+  results)
+
+
+(defn size [o]
+  (.size o))
 
 
 (defn re-init [app init-fn]
-  (binding [*asset-manager* (.getAssetManager app)
-            *input-manager* (.getInputManager app)
-            *root-node*     (root-node app)]
+  (binding [*app*           app
+            *asset-manager* (get-manager app :asset)
+            *input-manager* (get-manager app :input)
+            *root-node*     (root-node app)
+            *gui-node*      (gui-node app)]
     (clear app)
     (let [init-result (init-fn app)]
       (when (map? init-result)
@@ -280,9 +324,11 @@
   [name & {:keys [opts init update]}]
   `(defonce ~name (let [app# (proxy [SimpleApplication] []
                                (simpleInitApp []
-                                 (binding [*asset-manager* (get-manager ~'this :asset)
+                                 (binding [*app*           ~'this
+                                           *asset-manager* (get-manager ~'this :asset)
                                            *input-manager* (get-manager ~'this :input)
-                                           *root-node*     (root-node ~'this)]
+                                           *root-node*     (root-node ~'this)
+                                           *gui-node*      (gui-node ~'this)]
                                    ;;re-init and this block has to be same.
                                    (let [init-result# (~init ~'this)]
                                      (when (map? init-result#)
