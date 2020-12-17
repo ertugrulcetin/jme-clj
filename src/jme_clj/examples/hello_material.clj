@@ -4,9 +4,9 @@
    [jme-clj.core :refer :all])
   (:import
    (com.jme3.material RenderState$BlendMode)
+   (com.jme3.math ColorRGBA)
    (com.jme3.renderer.queue RenderQueue$Bucket)
-   (com.jme3.scene.shape Sphere$TextureMode)
-   (com.jme3.math ColorRGBA)))
+   (com.jme3.scene.shape Sphere$TextureMode)))
 
 
 (defn init []

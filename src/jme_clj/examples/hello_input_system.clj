@@ -2,9 +2,8 @@
   "Clojure version of https://wiki.jmonkeyengine.org/docs/3.3/tutorials/beginner/hello_input_system.html"
   (:require
    [jme-clj.core :refer :all])
-  (:import
-   (com.jme3.math ColorRGBA)
-   (com.jme3.input KeyInput MouseInput)))
+  (:import (com.jme3.input KeyInput MouseInput)
+           (com.jme3.math ColorRGBA)))
 
 
 (def action-listener

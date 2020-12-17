@@ -3,10 +3,10 @@
   (:require
    [jme-clj.core :refer :all])
   (:import
-   (com.jme3.app SimpleApplication)
-   (com.jme3.math ColorRGBA)
    (com.jme3.animation AnimControl LoopMode)
-   (com.jme3.input KeyInput)))
+   (com.jme3.app SimpleApplication)
+   (com.jme3.input KeyInput)
+   (com.jme3.math ColorRGBA)))
 
 
 (def action-listener

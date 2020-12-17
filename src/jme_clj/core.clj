@@ -3,32 +3,42 @@
    [camel-snake-kebab.core :as csk]
    [kezban.core :as k])
   (:import
+   (clojure.lang Var)
+   (com.jme3.animation AnimEventListener AnimControl AnimChannel)
    (com.jme3.app SimpleApplication)
-   (com.jme3.light AmbientLight
-                   DirectionalLight
-                   LightProbe
-                   PointLight
-                   SpotLight)
+   (com.jme3.asset AssetManager)
+   (com.jme3.collision CollisionResults Collidable)
+   (com.jme3.font BitmapText)
+   (com.jme3.input InputManager)
+   (com.jme3.input.controls
+    ActionListener
+    AnalogListener
+    KeyTrigger
+    MouseAxisTrigger
+    MouseButtonTrigger
+    Trigger)
+   (com.jme3.light
+    AmbientLight
+    DirectionalLight
+    LightProbe
+    PointLight
+    SpotLight)
    (com.jme3.material Material)
    (com.jme3.math Vector3f Ray)
    (com.jme3.scene Geometry Node Spatial Mesh)
    (com.jme3.scene.shape Box Sphere)
    (com.jme3.system AppSettings)
-   (com.jme3.font BitmapText)
-   (com.jme3.input.controls ActionListener
-                            AnalogListener
-                            KeyTrigger
-                            MouseAxisTrigger
-                            MouseButtonTrigger
-                            Trigger)
    (com.jme3.util TangentBinormalGenerator)
-   (com.jme3.animation AnimEventListener AnimControl AnimChannel)
-   (com.jme3.collision CollisionResults)))
+   (java.util Collection)))
 
+(set! *warn-on-reflection* true)
 
 (defonce states (atom {}))
 (defonce ^:private listeners (atom []))
-(def ^:dynamic *app* nil)
+
+(def ^{:dynamic true
+       :tag     SimpleApplication}
+  *app* nil)
 
 
 (defn get-state []
@@ -88,7 +98,7 @@
     :render (.getRenderManager *app*)))
 
 
-(defn root-node []
+(defn ^Node root-node []
   (.getRootNode *app*))
 
 
@@ -101,15 +111,15 @@
 
 
 (defn load-model [path]
-  (.loadModel (get-manager :asset) path))
+  (.loadModel ^AssetManager (get-manager :asset) ^String path))
 
 
 (defn load-texture [path]
-  (.loadTexture (get-manager :asset) path))
+  (.loadTexture ^AssetManager (get-manager :asset) ^String path))
 
 
 (defn load-font [path]
-  (.loadFont (get-manager :asset) path))
+  (.loadFont ^AssetManager (get-manager :asset) path))
 
 
 (defn bitmap-text [gui-font right-to-left]
@@ -132,12 +142,12 @@
   (doto node (.attachChild s)))
 
 
-(defn add-to-root [node]
+(defn add-to-root [^Node node]
   (.attachChild (root-node) node)
   node)
 
 
-(defn remove-from-root [node]
+(defn remove-from-root [^Node node]
   (.detachChild (root-node) node)
   node)
 
@@ -163,14 +173,14 @@
   (Node. name))
 
 
-(defn rotate [spatial x y z]
+(defn rotate [^Spatial spatial x y z]
   (.rotate spatial x y z))
 
 
 (defn scale
-  ([spatial s]
+  ([^Spatial spatial s]
    (.scale spatial s))
-  ([spatial x y z]
+  ([^Spatial spatial x y z]
    (.scale spatial x y z)))
 
 
@@ -191,11 +201,11 @@
                  (-> settings seq flatten)))))
 
 
-(defn add-light [spatial light]
+(defn add-light [^Spatial spatial light]
   (doto spatial (.addLight light)))
 
 
-(defn remove-light [spatial light]
+(defn remove-light [^Spatial spatial light]
   (doto spatial (.removeLight light)))
 
 
@@ -217,7 +227,7 @@
 
 (defn- create-input-mapping [m]
   (doseq [[k v] m]
-    (let [input-manager (get-manager :input)]
+    (let [^InputManager input-manager (get-manager :input)]
       (.deleteMapping input-manager k)
       (.addMapping input-manager k (into-array Trigger (if (vector? v) v [v])))
       m)))
@@ -225,7 +235,7 @@
 
 ;;TODO we're still removing all listeners!
 (defn- register-input-mapping [m]
-  (let [input-manager (get-manager :input)]
+  (let [^InputManager input-manager (get-manager :input)]
     (doseq [l @listeners]
       (.removeListener input-manager l)
       (reset! listeners []))
@@ -267,11 +277,11 @@
 
 ;;TODO check here, we might need to remove old ones
 ;;TODO like in input listeners to avoid duplication!
-(defn add-anim-listener [control listener]
+(defn add-anim-listener [^AnimControl control ^AnimEventListener listener]
   (.addListener control listener))
 
 
-(defn create-channel [control]
+(defn create-channel [^AnimControl control]
   (.createChannel control))
 
 
@@ -301,12 +311,12 @@
   (Ray. origin direction))
 
 
-(defn collide-with [o collidable results]
+(defn collide-with [^Collidable o collidable results]
   (.collideWith o collidable results)
   results)
 
 
-(defn size [o]
+(defn size [^Collection o]
   (.size o))
 
 
@@ -340,13 +350,13 @@
                     app#)))
 
 
-(defn start-app [app]
+(defn start-app [^SimpleApplication app]
   (doto app .start))
 
 
 ;;TODO stop app makes input not working after re-start
 ;;TODO try to find a way
-(defn stop-app [app]
+(defn stop-app [^SimpleApplication app]
   (clear app)
   (doto app (.stop true)))
 
@@ -354,11 +364,11 @@
 (defn unbind-app
   "Should be used for development purposes. (unbind-app #'my-ns/app)
    After calling `unbind-app`, `app` can be re-defined using `defsimpleapp`"
-  [v]
+  [^Var v]
   (when (bound? v)
     (stop-app @v)
     (.unbindRoot v)))
 
 
-(defn app-running? [app]
+(defn app-running? [^SimpleApplication app]
   (boolean (some-> app .getContext .isCreated)))
