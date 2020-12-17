@@ -314,7 +314,7 @@
   results)
 
 
-(defn size [^Collection o]
+(defn size [^CollisionResults o]
   (.size o))
 
 
