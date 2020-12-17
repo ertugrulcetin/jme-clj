@@ -3,7 +3,6 @@
   (:require
    [jme-clj.core :refer :all :as jme])
   (:import
-   (com.jme3.app SimpleApplication)
    (com.jme3.input KeyInput MouseInput)
    (com.jme3.math ColorRGBA)))
 
@@ -135,6 +134,4 @@
 
  (re-init app init)
 
- (unbind-app #'app)
- )
-
+ (unbind-app #'app))

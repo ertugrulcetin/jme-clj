@@ -49,5 +49,4 @@
 
  (re-init app init)
 
- (unbind-app #'app)
- )
+ (unbind-app #'app))

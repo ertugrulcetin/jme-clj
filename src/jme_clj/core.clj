@@ -10,19 +10,17 @@
    (com.jme3.collision CollisionResults Collidable)
    (com.jme3.font BitmapText)
    (com.jme3.input InputManager)
-   (com.jme3.input.controls
-    ActionListener
-    AnalogListener
-    KeyTrigger
-    MouseAxisTrigger
-    MouseButtonTrigger
-    Trigger)
-   (com.jme3.light
-    AmbientLight
-    DirectionalLight
-    LightProbe
-    PointLight
-    SpotLight)
+   (com.jme3.input.controls ActionListener
+                            AnalogListener
+                            KeyTrigger
+                            MouseAxisTrigger
+                            MouseButtonTrigger
+                            Trigger)
+   (com.jme3.light AmbientLight
+                   DirectionalLight
+                   LightProbe
+                   PointLight
+                   SpotLight)
    (com.jme3.material Material)
    (com.jme3.math Vector3f Ray)
    (com.jme3.scene Geometry Node Spatial Mesh)
