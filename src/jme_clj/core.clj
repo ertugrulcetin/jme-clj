@@ -1,38 +1,39 @@
 (ns jme-clj.core
   (:require
    [camel-snake-kebab.core :as csk]
-   [kezban.core :as k]
-   [clojure.set :as set])
+   [kezban.core :as k])
   (:import
    (clojure.lang Var)
    (com.jme3.animation AnimEventListener AnimControl AnimChannel)
    (com.jme3.app SimpleApplication)
+   (com.jme3.app.state AppStateManager)
    (com.jme3.asset AssetManager)
+   (com.jme3.bullet BulletAppState)
+   (com.jme3.bullet.collision.shapes CapsuleCollisionShape)
+   (com.jme3.bullet.control RigidBodyControl CharacterControl)
+   (com.jme3.bullet.util CollisionShapeFactory)
    (com.jme3.collision CollisionResults Collidable)
    (com.jme3.font BitmapText)
    (com.jme3.input InputManager)
-   (com.jme3.input.controls ActionListener
-                            AnalogListener
-                            KeyTrigger
-                            MouseAxisTrigger
-                            MouseButtonTrigger
-                            Trigger)
-   (com.jme3.light AmbientLight
-                   DirectionalLight
-                   LightProbe
-                   PointLight
-                   SpotLight)
+   (com.jme3.input.controls
+    ActionListener
+    AnalogListener
+    KeyTrigger
+    MouseAxisTrigger
+    MouseButtonTrigger
+    Trigger)
+   (com.jme3.light
+    AmbientLight
+    DirectionalLight
+    LightProbe
+    PointLight
+    SpotLight)
    (com.jme3.material Material)
    (com.jme3.math Vector3f Ray ColorRGBA)
    (com.jme3.scene Geometry Node Spatial Mesh)
    (com.jme3.scene.shape Box Sphere)
    (com.jme3.system AppSettings)
-   (com.jme3.util TangentBinormalGenerator)
-   (com.jme3.app.state AppStateManager)
-   (com.jme3.bullet BulletAppState)
-   (com.jme3.bullet.util CollisionShapeFactory)
-   (com.jme3.bullet.control RigidBodyControl CharacterControl)
-   (com.jme3.bullet.collision.shapes CapsuleCollisionShape)))
+   (com.jme3.util TangentBinormalGenerator)))
 
 (set! *warn-on-reflection* true)
 

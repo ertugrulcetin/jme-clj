@@ -1,12 +1,11 @@
 (ns jme-clj.examples.hello-collision
   "Clojure version of https://wiki.jmonkeyengine.org/docs/3.3/tutorials/beginner/hello_collision.html"
-  (:require
-   [jme-clj.core :refer :all]
-   [clojure.string :as str])
+  (:require [clojure.string :as str]
+            [jme-clj.core :refer :all])
   (:import
-   (com.jme3.math ColorRGBA)
    (com.jme3.asset.plugins ZipLocator)
-   (com.jme3.input KeyInput)))
+   (com.jme3.input KeyInput)
+   (com.jme3.math ColorRGBA)))
 
 
 (defn action-listener []
