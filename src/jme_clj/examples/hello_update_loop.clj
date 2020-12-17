@@ -34,5 +34,7 @@
  (start-app app)
  (stop-app app)
 
+ (re-init app init)
+
  (unbind-app #'app)
  )
