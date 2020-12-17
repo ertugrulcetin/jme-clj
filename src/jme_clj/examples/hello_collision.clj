@@ -95,6 +95,7 @@
                          down (negate cam-dir))
         walk-direction (or (some->> direction (add-v3-local walk-direction))
                            walk-direction)]
+    ;;since we mutate objects internally, we don't need to return hash-map in here
     (set* player :walk-direction walk-direction)
     (set* (cam) :location (get* player :physics-location))))
 
