@@ -368,5 +368,5 @@
     (.unbindRoot v)))
 
 
-(defn app-running? [^SimpleApplication app]
+(defn running? [^SimpleApplication app]
   (boolean (some-> app .getContext .isCreated)))
