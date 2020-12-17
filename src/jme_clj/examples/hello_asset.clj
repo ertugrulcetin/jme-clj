@@ -44,8 +44,8 @@
 
 
 (comment
- (start-app app)
- (stop-app app)
+ (start app)
+ (stop app)
 
  (re-init app init)
 

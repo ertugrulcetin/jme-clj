@@ -318,14 +318,6 @@
   (.size o))
 
 
-(defn re-init [app init-fn]
-  (binding [*app* app]
-    (clear app)
-    (let [init-result (init-fn)]
-      (when (map? init-result)
-        (swap! states assoc ::app init-result)))))
-
-
 (defmacro defsimpleapp
   [name & {:keys [opts init update]}]
   `(defonce ~name (let [app# (proxy [SimpleApplication] []
@@ -348,15 +340,23 @@
                     app#)))
 
 
-(defn start-app [^SimpleApplication app]
+(defn start [^SimpleApplication app]
   (doto app .start))
 
 
 ;;TODO stop app makes input not working after re-start
 ;;TODO try to find a way
-(defn stop-app [^SimpleApplication app]
+(defn stop [^SimpleApplication app]
   (clear app)
   (doto app (.stop true)))
+
+
+(defn re-init [app init-fn]
+  (binding [*app* app]
+    (clear app)
+    (let [init-result (init-fn)]
+      (when (map? init-result)
+        (swap! states assoc ::app init-result)))))
 
 
 (defn unbind-app
@@ -364,7 +364,7 @@
    After calling `unbind-app`, `app` can be re-defined using `defsimpleapp`"
   [^Var v]
   (when (bound? v)
-    (stop-app @v)
+    (stop @v)
     (.unbindRoot v)))
 
 
