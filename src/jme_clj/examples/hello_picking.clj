@@ -15,10 +15,9 @@
    (fn [name pressed? tpf]
      (when (and (= name "Shoot") (not pressed?))
        (let [{:keys [mark shootables]} (get-state)
-             results (collision-results)
              ray     (ray (get* (cam) :location)
                           (get* (cam) :direction))
-             _       (collide-with shootables ray results)]
+             results (collide-with shootables ray (collision-results))]
          (doseq [idx (range (size results))]
            (let [dist (-> results (get* :collision idx) (get* :distance))
                  pt   (-> results (get* :collision idx) (get* :contact-point))
