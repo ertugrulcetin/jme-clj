@@ -12,7 +12,7 @@
         asset-manager (get-manager :asset)
         mat           (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")
         root-node     (root-node)]
-    (set* mat :color "Color" ColorRGBA/Red)
+    (set* mat :color "Color" ColorRGBA/Blue)
     (set* geom :material mat)
     (attach-child root-node geom)))
 
