@@ -328,10 +328,11 @@
                                      (when (map? init-result#)
                                        (swap! states assoc ::app init-result#)))))
                                (simpleUpdate [tpf#]
-                                 (let [update-result# ((or ~update
-                                                           (constantly nil)) tpf#)]
-                                   (when (map? update-result#)
-                                     (swap! states update ::app merge update-result#)))))]
+                                 (binding [*app* ~'this]
+                                   (let [update-result# ((or ~update
+                                                             (constantly nil)) tpf#)]
+                                     (when (map? update-result#)
+                                       (swap! states update ::app merge update-result#))))))]
                     (when (seq ~opts)
                       (some->> ~opts :show-settings? (.setShowSettings app#))
                       (some->> ~opts :pause-on-lost-focus? (.setPauseOnLostFocus app#))
