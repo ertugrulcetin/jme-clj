@@ -11,22 +11,21 @@
 (defn action-listener []
   (create-action-listener
    (fn [name pressed? tpf]
-     (let [pressed-kw (-> name str/lower-case keyword)
-           {:keys [player]} (get-state)]
-       (if (= :jump pressed-kw)
+     (let [{:keys [player]} (get-state)]
+       (if (= :jump name)
          (when pressed?
            (call* player :jump (vec3 0 20 0)))
-         (set-state pressed-kw pressed?))))))
+         (set-state name pressed?))))))
 
 
 (defn- set-up-keys []
   (apply-input-mapping
-   {:triggers  {"Left"  (key-trigger KeyInput/KEY_A)
-                "Right" (key-trigger KeyInput/KEY_D)
-                "Up"    (key-trigger KeyInput/KEY_W)
-                "Down"  (key-trigger KeyInput/KEY_S)
-                "Jump"  (key-trigger KeyInput/KEY_SPACE)}
-    :listeners {(action-listener) ["Left" "Right" "Up" "Down" "Jump"]}}))
+   {:triggers  {:left  (key-trigger KeyInput/KEY_A)
+                :right (key-trigger KeyInput/KEY_D)
+                :up    (key-trigger KeyInput/KEY_W)
+                :down  (key-trigger KeyInput/KEY_S)
+                :jump  (key-trigger KeyInput/KEY_SPACE)}
+    :listeners {(action-listener) [:left :right :up :down :jump]}}))
 
 
 (defn- set-up-light []
@@ -56,7 +55,7 @@
                             :jump-speed 50
                             :fall-speed 80
                             :gravity (vec3 0 -30 0)
-                            :physics-location (vec3 10 10 10))]
+                            :physics-location (vec3 0 10 0))]
     (attach bullet-as)
     (add-to-root scene-model)
     (-> bullet-as

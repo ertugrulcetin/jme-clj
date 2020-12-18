@@ -375,7 +375,8 @@
 
 (defn- create-input-mapping [m]
   (doseq [[k v] m]
-    (let [^InputManager input-manager (get-manager :input)]
+    (let [k                           (name k)
+          ^InputManager input-manager (get-manager :input)]
       (.deleteMapping input-manager k)
       (.addMapping input-manager k (into-array Trigger (if (vector? v) v [v])))
       m)))
@@ -388,7 +389,9 @@
       (.removeListener input-manager l)
       (reset! listeners []))
     (doseq [[k v] m]
-      (.addListener input-manager k (into-array String (if (vector? v) v [v])))
+      (.addListener input-manager k (into-array String (if (vector? v)
+                                                         (mapv name v)
+                                                         (vector (name v)))))
       (swap! listeners conj k))
     m))
 
@@ -403,14 +406,14 @@
   (let [f (bound-fn* f)]
     (proxy [ActionListener] []
       (onAction [name pressed? tpf]
-        (f name pressed? tpf)))))
+        (f (keyword name) pressed? tpf)))))
 
 
 (defn create-analog-listener [f]
   (let [f (bound-fn* f)]
     (proxy [AnalogListener] []
       (onAnalog [name value tpf]
-        (f name value tpf)))))
+        (f (keyword name) value tpf)))))
 
 
 (defn create-anim-listener [on-cycle-done on-anim-change]

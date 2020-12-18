@@ -12,7 +12,7 @@
 (defn action-listener []
   (create-action-listener
    (fn [name pressed? tpf]
-     (when (and (= name "Shoot") (not pressed?))
+     (when (and (= name :shoot) (not pressed?))
        (let [{:keys [mark shootables]} (get-state)
              ray     (ray (get* (cam) :location)
                           (get* (cam) :direction))
@@ -68,9 +68,9 @@
 
 (defn- init-keys []
   (apply-input-mapping
-   {:triggers  {"Shoot" [(key-trigger KeyInput/KEY_SPACE)
-                         (mouse-trigger MouseInput/BUTTON_LEFT)]}
-    :listeners {(action-listener) "Shoot"}}))
+   {:triggers  {:shoot [(key-trigger KeyInput/KEY_SPACE)
+                        (mouse-trigger MouseInput/BUTTON_LEFT)]}
+    :listeners {(action-listener) :shoot}}))
 
 
 ;;A centred plus sign to help the player aim.

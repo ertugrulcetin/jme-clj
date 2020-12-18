@@ -10,14 +10,14 @@
 (def action-listener
   (create-action-listener
    (fn [name pressed? tpf]
-     (when (and (= name "Shoot") (not pressed?))
+     (when (and (= name :shoot) (not pressed?))
        (play (:audio-gun (get-state)))))))
 
 
 (defn- init-keys []
   (apply-input-mapping
-   {:triggers  {"Shoot" (mouse-trigger MouseInput/BUTTON_LEFT)}
-    :listeners {action-listener "Shoot"}}))
+   {:triggers  {:shoot (mouse-trigger MouseInput/BUTTON_LEFT)}
+    :listeners {action-listener :shoot}}))
 
 
 (defn init-audio []
@@ -27,7 +27,7 @@
   ;;  :audio-nature audio-nature}
   ;; When we return hash map, it will be added to jme-clj.core/states with key :jme-clj.core/app
   ;; so we can access from everywhere, for example inside `update` fn etc.
-  (letj [audio-gun    (audio-node "Sound/Effects/Gun.wav" AudioData$DataType/Buffer)
+  (letj [audio-gun (audio-node "Sound/Effects/Gun.wav" AudioData$DataType/Buffer)
          audio-nature (audio-node "Sound/Environment/Ocean Waves.ogg" AudioData$DataType/Stream)]
         (setc audio-gun
               :positional false

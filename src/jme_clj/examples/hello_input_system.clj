@@ -22,21 +22,21 @@
            v     (get* player :local-translation)]
        (when running?
          (case name
-           "Rotate" (rotate player 0 (* value speed) 0)
-           "Right" (set* player :local-translation (+ (.-x v) (* value speed)) (.-y v) (.-z v))
-           "Left" (set* player :local-translation (- (.-x v) (* value speed)) (.-y v) (.-z v))
+           :rotate (rotate player 0 (* value speed) 0)
+           :right (set* player :local-translation (+ (.-x v) (* value speed)) (.-y v) (.-z v))
+           :left (set* player :local-translation (- (.-x v) (* value speed)) (.-y v) (.-z v))
            (println "Press P to unpause.")))))))
 
 
 (defn- init-keys []
   (apply-input-mapping
-   {:triggers  {"Pause"  (key-trigger KeyInput/KEY_P)
-                "Left"   (key-trigger KeyInput/KEY_J)
-                "Right"  (key-trigger KeyInput/KEY_K)
-                "Rotate" [(key-trigger KeyInput/KEY_SPACE)
-                          (mouse-trigger MouseInput/BUTTON_LEFT)]}
-    :listeners {action-listener "Pause"
-                analog-listener ["Left" "Right" "Rotate"]}}))
+   {:triggers  {:pause  (key-trigger KeyInput/KEY_P)
+                :left   (key-trigger KeyInput/KEY_J)
+                :right  (key-trigger KeyInput/KEY_K)
+                :rotate [(key-trigger KeyInput/KEY_SPACE)
+                         (mouse-trigger MouseInput/BUTTON_LEFT)]}
+    :listeners {action-listener :pause
+                analog-listener [:left :right :rotate]}}))
 
 
 (defn init []

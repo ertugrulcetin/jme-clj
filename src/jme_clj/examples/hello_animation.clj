@@ -11,7 +11,7 @@
 (def action-listener
   (create-action-listener
    (fn [name pressed? tpf]
-     (when (and (= name "Walk") (not pressed?))
+     (when (and (= name :walk) (not pressed?))
        (let [{:keys [channel]} (get-state)]
          (when (-> channel (get* :animation-name) (not= "Walk"))
            (-> channel
@@ -32,8 +32,8 @@
 
 (defn- init-keys []
   (apply-input-mapping
-   {:triggers  {"Walk" (key-trigger KeyInput/KEY_SPACE)}
-    :listeners {action-listener "Walk"}}))
+   {:triggers  {:walk (key-trigger KeyInput/KEY_SPACE)}
+    :listeners {action-listener :walk}}))
 
 
 (defn init []
