@@ -498,3 +498,9 @@
 
 (defn running? [^SimpleApplication app]
   (boolean (some-> app .getContext .isCreated)))
+
+
+(defmacro run
+  [app & body]
+  `(binding [*app* ~app]
+     ~@body))
