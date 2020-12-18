@@ -296,12 +296,6 @@
   (TerrainLodControl. terrain camera))
 
 
-;;TODO consider this form;
-;;TODO (set* (character-control capsule-shape 0.05)
-;          :jump-speed 20
-;          :fall-speed [30 24]
-;          :gravity (vec3 0 -30 0)
-;          :physics-location (vec3 0 10 0))
 (defmacro set* [obj kw & args]
   `(let [result# (eval ~`(do ~obj))]
      (~(symbol (csk/->camelCase (str ".set-" (name kw)))) result# ~@args)
