@@ -25,7 +25,10 @@
           :gravity [0 0 0]
           :low-life 1
           :high-life 3)
-    (set* (get* fire :particle-influencer) :velocity-variation 0.3)
+    (-> fire
+        (get* :particle-influencer)
+        (setc :velocity-variation 0.3
+              :initial-velocity (vec3 0 2 0)))
     (add-to-root fire)
     (setc debris
           :material mat-debris
@@ -37,7 +40,10 @@
           :gravity [0 6 0]
           :low-life 1
           :high-life 3)
-    (set* (get* fire :particle-influencer) :velocity-variation 0.6)
+    (-> debris
+        (get* :particle-influencer)
+        (setc :velocity-variation 0.6
+              :initial-velocity (vec3 0 4 0)))
     (add-to-root debris)
     (emit-all-particles debris)))
 
