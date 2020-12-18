@@ -450,12 +450,12 @@
   (.size o))
 
 
-(defn simple-app [{:keys [opts] :as m}]
+(defn simple-app [{:keys [opts init] :as m}]
   (let [app (proxy [SimpleApplication] []
               (simpleInitApp []
                 (binding [*app* this]
                   ;;re-init and this block has to be same.
-                  (let [init-result ((:init m))]
+                  (let [init-result (init)]
                     (when (map? init-result)
                       (swap! states assoc ::app init-result)))))
               (simpleUpdate [tpf]
