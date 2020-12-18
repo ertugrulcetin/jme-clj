@@ -39,7 +39,8 @@
    (com.jme3.terrain.geomipmap TerrainQuad TerrainLodControl)
    (com.jme3.terrain.heightmap ImageBasedHeightMap HeightMap)
    (com.jme3.texture Texture)
-   (com.jme3.util TangentBinormalGenerator)))
+   (com.jme3.util TangentBinormalGenerator)
+   (com.jme3.audio AudioNode AudioData$DataType)))
 
 (set! *warn-on-reflection* true)
 
@@ -107,6 +108,7 @@
     root-node))
 
 
+;;TODO consider extract into separate fns
 (defn get-manager [type]
   (case type
     :asset (.getAssetManager *app*)
@@ -121,6 +123,18 @@
 
 (defn gui-node []
   (.getGuiNode *app*))
+
+
+(defn audio-node [^String name ^AudioData$DataType type]
+  (AudioNode. ^AssetManager (get-manager :asset) name type))
+
+
+(defn play [^AudioNode an]
+  (doto an .play))
+
+
+(defn play-ins [^AudioNode an]
+  (doto an .playInstance))
 
 
 (defn view-port []
@@ -310,7 +324,7 @@
   `(~(symbol (csk/->camelCase (str "." (name kw)))) ~obj ~@args))
 
 
-(defmacro setm
+(defmacro setc
   "Compact version of `set*`
    When you need to pass multiple parameters, use a vector. e.g.:
    (setm :local-translation [0.0 -5.0 -2.0])"

@@ -52,7 +52,7 @@
         landscape     (rigid-body-control scene-shape 0)
         scene-model   (add-control scene-model landscape)
         capsule-shape (capsule-collision-shape 1.5 6 1)
-        player        (setm (character-control capsule-shape 0.05)
+        player        (setc (character-control capsule-shape 0.05)
                             :jump-speed 50
                             :fall-speed 80
                             :gravity (vec3 0 -30 0)

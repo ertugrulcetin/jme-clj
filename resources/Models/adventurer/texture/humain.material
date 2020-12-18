@@ -1,0 +1,64 @@
+material humain_cheveux
+{
+	technique
+	{
+		pass
+		{
+			diffuse vertexcolour
+			specular 0.500000 0.500000 0.500000 12.500000
+			scene_blend alpha_blend 
+			texture_unit
+			{
+				texture homme_cheveux.png
+			}
+		}
+	}
+}
+material humain_yeux1
+{
+	technique
+	{
+		pass
+		{
+			diffuse vertexcolour
+			specular 0.500000 0.500000 0.500000 12.500000
+			scene_blend alpha_blend 
+			texture_unit
+			{
+				texture homme_yeux1.png
+			}
+		}
+	}
+}
+material humain_corps1
+{
+	technique
+	{
+		pass
+		{
+			diffuse vertexcolour
+			specular 0.500000 0.500000 0.500000 12.500000
+			scene_blend alpha_blend 
+			texture_unit
+			{
+				texture homme_corps1.png
+			}
+		}
+	}
+}
+material humain_face1
+{
+	technique
+	{
+		pass
+		{
+			diffuse vertexcolour
+			specular 0.500000 0.500000 0.500000 12.500000
+			scene_blend alpha_blend 
+			texture_unit
+			{
+				texture homme_face1.png
+			}
+		}
+	}
+}
