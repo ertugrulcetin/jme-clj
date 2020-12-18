@@ -36,8 +36,7 @@
 ;;A cube object for target practice
 (defn make-cube [name x y z]
   (let [box (box 1 1 1)
-        mat (-> (get-manager :asset)
-                (material "Common/MatDefs/Misc/Unshaded.j3md")
+        mat (-> (material "Common/MatDefs/Misc/Unshaded.j3md")
                 (set* :color "Color" (ColorRGBA/randomColor)))]
     (-> (geo name box)
         (set* :local-translation x y z)
@@ -47,8 +46,7 @@
 ;;A floor to show that the "shot" can go through several objects.
 (defn make-floor []
   (let [box (box 15 0.2 15)
-        mat (-> (get-manager :asset)
-                (material "Common/MatDefs/Misc/Unshaded.j3md")
+        mat (-> (material "Common/MatDefs/Misc/Unshaded.j3md")
                 (set* :color "Color" ColorRGBA/Gray))]
     (-> (geo "the Floor" box)
         (set* :local-translation 0 -4 -5)
@@ -98,8 +96,7 @@
 (defn- init-mark []
   (let [sphere (sphere 30 30 0.2)
         mark   (geo "BOOM!" sphere)
-        mat    (-> (get-manager :asset)
-                   (material "Common/MatDefs/Misc/Unshaded.j3md")
+        mat    (-> (material "Common/MatDefs/Misc/Unshaded.j3md")
                    (set* :color "Color" ColorRGBA/Red))]
     (set* mark :material mat)))
 

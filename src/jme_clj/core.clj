@@ -109,13 +109,16 @@
     root-node))
 
 
-;;TODO consider extract into separate fns
-(defn get-manager [type]
-  (case type
-    :asset (.getAssetManager *app*)
-    :input (.getInputManager *app*)
-    :app-state (.getStateManager *app*)
-    :render (.getRenderManager *app*)))
+(defn ^AssetManager asset-manager []
+  (.getAssetManager *app*))
+
+
+(defn ^InputManager input-manager []
+  (.getInputManager *app*))
+
+
+(defn ^AppStateManager state-manager []
+  (.getStateManager *app*))
 
 
 (defn ^Node root-node []
@@ -127,7 +130,7 @@
 
 
 (defn audio-node [^String name ^AudioData$DataType type]
-  (AudioNode. ^AssetManager (get-manager :asset) name type))
+  (AudioNode. (asset-manager) name type))
 
 
 (defn play [^AudioNode an]
@@ -171,15 +174,15 @@
 
 
 (defn load-model [path]
-  (.loadModel ^AssetManager (get-manager :asset) ^String path))
+  (.loadModel (asset-manager) ^String path))
 
 
 (defn load-texture [path]
-  (.loadTexture ^AssetManager (get-manager :asset) ^String path))
+  (.loadTexture (asset-manager) ^String path))
 
 
 (defn load-font [path]
-  (.loadFont ^AssetManager (get-manager :asset) path))
+  (.loadFont (asset-manager) path))
 
 
 (defn bitmap-text [gui-font right-to-left]
@@ -228,7 +231,7 @@
 
 
 (defn material [path]
-  (Material. (get-manager :asset) path))
+  (Material. (asset-manager) path))
 
 
 (defn color-rgba [r g b a]
@@ -236,8 +239,7 @@
 
 
 (defn register-locator [path locator]
-  (doto ^AssetManager (get-manager :asset)
-    (.registerLocator path locator)))
+  (doto (asset-manager) (.registerLocator path locator)))
 
 
 (defn create-mesh-shape [spatial]
@@ -249,8 +251,7 @@
 
 
 (defn attach [app-state]
-  (doto ^AppStateManager (get-manager :app-state)
-    (.attach app-state)))
+  (doto (state-manager) (.attach app-state)))
 
 
 (defn attach-child [^Node node ^Spatial s]
@@ -384,8 +385,8 @@
 
 (defn- create-input-mapping [m]
   (doseq [[k v] m]
-    (let [k                           (name k)
-          ^InputManager input-manager (get-manager :input)]
+    (let [k             (name k)
+          input-manager (input-manager)]
       (.deleteMapping input-manager k)
       (.addMapping input-manager k (into-array Trigger (if (vector? v) v [v])))
       m)))
@@ -393,7 +394,7 @@
 
 ;;TODO we're still removing all listeners!
 (defn- register-input-mapping [m]
-  (let [^InputManager input-manager (get-manager :input)]
+  (let [input-manager (input-manager)]
     (doseq [l @listeners]
       (.removeListener input-manager l)
       (reset! listeners []))
@@ -503,6 +504,16 @@
 
 
 (defmacro defsimpleapp
+  "Creates a SimpleApplication instance and binds with given name.
+   e.g.:
+  (defsimpleapp app
+                :opts {:show-settings?       false
+                       :pause-on-lost-focus? false
+                       :settings             {:title          \"My JME Game\"
+                                              :load-defaults? true
+                                              :frame-rate     60}}
+                :init init
+                :update simple-update)"
   [name & {:keys [opts init update] :as m}]
   `(defonce ~name (simple-app ~m)))
 
