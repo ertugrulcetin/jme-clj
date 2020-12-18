@@ -441,7 +441,7 @@
   (.size o))
 
 
-(defn simple-app [m]
+(defn simple-app [& {:keys [opts] :as m}]
   (let [app (proxy [SimpleApplication] []
               (simpleInitApp []
                 (binding [*app* this]
@@ -456,10 +456,10 @@
                                              (constantly nil)) tpf)]
                       (when (map? update-result)
                         (swap! states update ::app merge update-result)))))))]
-    (when (seq (:opts m))
-      (some->> m :opts :show-settings? (.setShowSettings app))
-      (some->> m :opts :pause-on-lost-focus? (.setPauseOnLostFocus app))
-      (some->> m :opts :settings map->app-settings (.setSettings app)))
+    (when (seq opts)
+      (some->> opts :show-settings? (.setShowSettings app))
+      (some->> opts :pause-on-lost-focus? (.setPauseOnLostFocus app))
+      (some->> opts :settings map->app-settings (.setSettings app)))
     app))
 
 
