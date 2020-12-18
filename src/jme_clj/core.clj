@@ -33,7 +33,12 @@
    (com.jme3.scene Geometry Node Spatial Mesh)
    (com.jme3.scene.shape Box Sphere)
    (com.jme3.system AppSettings)
-   (com.jme3.util TangentBinormalGenerator)))
+   (com.jme3.util TangentBinormalGenerator)
+   (com.jme3.terrain.heightmap ImageBasedHeightMap HeightMap)
+   (com.jme3.texture Texture)
+   (com.jme3.terrain.geomipmap TerrainQuad TerrainLodControl)
+   (com.jme3.terrain Terrain)
+   (com.jme3.renderer Camera)))
 
 (set! *warn-on-reflection* true)
 
@@ -266,6 +271,36 @@
    (.scale spatial x y z)))
 
 
+(defn image-based-hm [img]
+  (ImageBasedHeightMap. img))
+
+
+(defn image [^Texture texture]
+  (.getImage texture))
+
+
+(defn load-hm [^HeightMap hm]
+  (doto hm .load))
+
+
+(defn get-hm [^HeightMap hm]
+  (.getHeightMap hm))
+
+
+(defn terrain-quad [name path-size total-size hm]
+  (TerrainQuad. name path-size total-size hm))
+
+
+(defn terrain-lod-control [^Terrain terrain ^Camera camera]
+  (TerrainLodControl. terrain camera))
+
+
+;;TODO consider this form;
+;;TODO (set* (character-control capsule-shape 0.05)
+;          :jump-speed 20
+;          :fall-speed [30 24]
+;          :gravity (vec3 0 -30 0)
+;          :physics-location (vec3 0 10 0))
 (defmacro set* [obj kw & args]
   `(let [result# (eval ~`(do ~obj))]
      (~(symbol (csk/->camelCase (str ".set-" (name kw)))) result# ~@args)
@@ -449,7 +484,7 @@
         (swap! states assoc
                ::app init-result
                :initialized? true)
-        (swap! states #(assoc (dissoc states %) :initialized? true) ::app)))))
+        (swap! states #(assoc (dissoc %1 %2) :initialized? true) ::app)))))
 
 
 (defn unbind-app
