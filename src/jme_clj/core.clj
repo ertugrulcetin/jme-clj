@@ -137,6 +137,10 @@
   (doto an .playInstance))
 
 
+(defn listener []
+  (.getListener *app*))
+
+
 (defn view-port []
   (.getViewPort *app*))
 

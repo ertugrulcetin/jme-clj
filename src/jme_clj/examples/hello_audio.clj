@@ -29,18 +29,24 @@
   ;; so we can access from everywhere, for example inside `update` fn etc.
   (letj [audio-gun    (audio-node "Sound/Effects/Gun.wav" AudioData$DataType/Buffer)
          audio-nature (audio-node "Sound/Environment/Ocean Waves.ogg" AudioData$DataType/Stream)]
-    (setc audio-gun
-          :positional false
-          :looping false
-          :volume 2)
-    (setc audio-nature
-          :positional true
-          :looping true
-          :volume 3)
-    (-> (root-node)
-        (attach-child audio-gun)
-        (attach-child audio-nature))
-    (play audio-nature)))
+        (setc audio-gun
+              :positional false
+              :looping false
+              :volume 2)
+        (setc audio-nature
+              :positional true
+              :looping true
+              :volume 3)
+        (-> (root-node)
+            (attach-child audio-gun)
+            (attach-child audio-nature))
+        (play audio-nature)))
+
+
+(defn simple-update [tpf]
+  (setc (listener)
+        :location (get* (cam) :location)
+        :rotation (get* (cam) :rotation)))
 
 
 (defn init []
@@ -56,7 +62,9 @@
     (assoc (init-audio) :player player)))
 
 
-(defsimpleapp app :init init)
+(defsimpleapp app
+              :init init
+              :update simple-update)
 
 
 (comment
