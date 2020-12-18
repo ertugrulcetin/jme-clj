@@ -441,27 +441,31 @@
   (.size o))
 
 
+(defn simple-app [m]
+  (let [app (proxy [SimpleApplication] []
+              (simpleInitApp []
+                (binding [*app* this]
+                  ;;re-init and this block has to be same.
+                  (let [init-result ((:init m))]
+                    (when (map? init-result)
+                      (swap! states assoc ::app init-result)))))
+              (simpleUpdate [tpf]
+                (when (-> @states :initialized? false? not)
+                  (binding [*app* this]
+                    (let [update-result ((or (:update m)
+                                             (constantly nil)) tpf)]
+                      (when (map? update-result)
+                        (swap! states update ::app merge update-result)))))))]
+    (when (seq (:opts m))
+      (some->> m :opts :show-settings? (.setShowSettings app))
+      (some->> m :opts :pause-on-lost-focus? (.setPauseOnLostFocus app))
+      (some->> m :opts :settings map->app-settings (.setSettings app)))
+    app))
+
+
 (defmacro defsimpleapp
-  [name & {:keys [opts init update]}]
-  `(defonce ~name (let [app# (proxy [SimpleApplication] []
-                               (simpleInitApp []
-                                 (binding [*app* ~'this]
-                                   ;;re-init and this block has to be same.
-                                   (let [init-result# (~init)]
-                                     (when (map? init-result#)
-                                       (swap! states assoc ::app init-result#)))))
-                               (simpleUpdate [tpf#]
-                                 (when (-> @states :initialized? false? not)
-                                   (binding [*app* ~'this]
-                                     (let [update-result# ((or ~update
-                                                               (constantly nil)) tpf#)]
-                                       (when (map? update-result#)
-                                         (swap! states update ::app merge update-result#)))))))]
-                    (when (seq ~opts)
-                      (some->> ~opts :show-settings? (.setShowSettings app#))
-                      (some->> ~opts :pause-on-lost-focus? (.setPauseOnLostFocus app#))
-                      (some->> ~opts :settings map->app-settings (.setSettings app#)))
-                    app#)))
+  [name & {:keys [opts init update] :as m}]
+  `(defonce ~name (simple-app ~m)))
 
 
 (defn start [^SimpleApplication app]
