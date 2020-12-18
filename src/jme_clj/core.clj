@@ -504,16 +504,19 @@
 
 
 (defmacro defsimpleapp
-  "Creates a SimpleApplication instance and binds with given name.
+  "Creates a SimpleApplication instance and binds with given name. Requires 3 parameters besides name.
+   init (initialize fn, required)
+   update (update fn, optional)
+   opts (app settings, optional)
    e.g.:
-  (defsimpleapp app
-                :opts {:show-settings?       false
-                       :pause-on-lost-focus? false
-                       :settings             {:title          \"My JME Game\"
-                                              :load-defaults? true
-                                              :frame-rate     60}}
-                :init init
-                :update simple-update)"
+   (defsimpleapp app
+                 :opts {:show-settings?       false
+                        :pause-on-lost-focus? false
+                        :settings             {:title          \"My JME Game\"
+                                               :load-defaults? true
+                                               :frame-rate     60}}
+                 :init init
+                 :update simple-update)"
   [name & {:keys [opts init update] :as m}]
   `(defonce ~name (simple-app ~m)))
 
