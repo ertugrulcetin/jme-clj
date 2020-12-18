@@ -505,9 +505,9 @@
 
 (defmacro defsimpleapp
   "Creates a SimpleApplication instance and binds with given name. Requires 3 parameters besides name.
-   init (initialize fn, required)
+   init   (initialize fn, required)
    update (update fn, optional)
-   opts (app settings, optional)
+   opts   (app settings, optional)
    e.g.:
    (defsimpleapp app
                  :opts {:show-settings?       false
