@@ -26,7 +26,8 @@
                  [org.jmonkeyengine/jme3-networking ~jme-version]
                  [org.jmonkeyengine/jme3-blender ~jme-version]
                  [camel-snake-kebab "0.4.2"]
-                 [kezban "0.1.92"]]
+                 [kezban "0.1.92"]
+                 [potemkin "0.4.5"]]
 
   :plugins [[ertu/lein-bikeshed "0.1.11"]
             [ertu/lein-carve "0.1.0"]

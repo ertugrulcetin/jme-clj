@@ -1,7 +1,8 @@
 (ns jme-clj.core
   (:require
    [camel-snake-kebab.core :as csk]
-   [kezban.core :as k])
+   [kezban.core :as k]
+   [potemkin :as p])
   (:import
    (clojure.lang Var)
    (com.jme3.animation AnimEventListener AnimControl AnimChannel)
@@ -30,15 +31,15 @@
     SpotLight)
    (com.jme3.material Material)
    (com.jme3.math Vector3f Ray ColorRGBA)
+   (com.jme3.renderer Camera)
    (com.jme3.scene Geometry Node Spatial Mesh)
    (com.jme3.scene.shape Box Sphere)
    (com.jme3.system AppSettings)
-   (com.jme3.util TangentBinormalGenerator)
+   (com.jme3.terrain Terrain)
+   (com.jme3.terrain.geomipmap TerrainQuad TerrainLodControl)
    (com.jme3.terrain.heightmap ImageBasedHeightMap HeightMap)
    (com.jme3.texture Texture)
-   (com.jme3.terrain.geomipmap TerrainQuad TerrainLodControl)
-   (com.jme3.terrain Terrain)
-   (com.jme3.renderer Camera)))
+   (com.jme3.util TangentBinormalGenerator)))
 
 (set! *warn-on-reflection* true)
 
@@ -315,6 +316,20 @@
   `(~(symbol (csk/->camelCase (str "." (name kw)))) ~obj ~@args))
 
 
+(defmacro setm
+  "Compact version of `set*`
+   When you need to pass multiple parameters, use a vector. e.g.:
+   (setm :local-translation [0.0 -5.0 -2.0])"
+  [obj & args]
+  (p/unify-gensyms
+   `(let [result## (eval ~`(do ~obj))]
+      ~@(map (fn [[k# v#]]
+               (if (vector? v#)
+                 `(set* result## ~k# ~@v#)
+                 `(set* result## ~k# ~v#)))
+             (partition 2 args)))))
+
+
 (defn map->app-settings [settings]
   (when (seq settings)
     (apply app-settings
@@ -441,7 +456,7 @@
   (.size o))
 
 
-(defn simple-app [& {:keys [opts] :as m}]
+(defn simple-app [{:keys [opts] :as m}]
   (let [app (proxy [SimpleApplication] []
               (simpleInitApp []
                 (binding [*app* this]

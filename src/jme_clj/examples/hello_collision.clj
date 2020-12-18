@@ -52,11 +52,11 @@
         landscape     (rigid-body-control scene-shape 0)
         scene-model   (add-control scene-model landscape)
         capsule-shape (capsule-collision-shape 1.5 6 1)
-        player        (-> (character-control capsule-shape 0.05)
-                          (set* :jump-speed 20)
-                          (set* :fall-speed 30)
-                          (set* :gravity (vec3 0 -30 0))
-                          (set* :physics-location (vec3 0 10 0)))]
+        player        (setm (character-control capsule-shape 0.05)
+                            :jump-speed 50
+                            :fall-speed 80
+                            :gravity (vec3 0 -30 0)
+                            :physics-location (vec3 10 10 10))]
     (attach bullet-as)
     (add-to-root scene-model)
     (-> bullet-as
