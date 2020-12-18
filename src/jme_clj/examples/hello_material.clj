@@ -11,22 +11,21 @@
 
 (defn init []
   ;;A simple textured cube -- in good MIP map quality.
-  (let [asset-manager (get-manager :asset)
-        cube-1-mesh   (box 1 1 1)
+  (let [cube-1-mesh   (box 1 1 1)
         cube-1-geo    (geo "My Textured Box" cube-1-mesh)
-        cube-1-mat    (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")
+        cube-1-mat    (material "Common/MatDefs/Misc/Unshaded.j3md")
         cube-1-tex    (load-texture "Interface/Logo/Monkey.jpg")
         ;;A translucent/transparent texture, similar to a window frame.
         cube-2-mesh   (box 1 1 0.01)
         cube-2-geo    (geo "window frame" cube-2-mesh)
-        cube-2-mat    (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")
+        cube-2-mat    (material "Common/MatDefs/Misc/Unshaded.j3md")
         ;;A bumpy rock with a shiny light effect.
         sphere-mesh   (sphere 32 32 2)
         sphere-geo    (geo "Shiny rock" sphere-mesh)
         sphere-mesh   (-> sphere-mesh
                           (set* :texture-mode Sphere$TextureMode/Projected)
                           generate)
-        sphere-mat    (material asset-manager "Common/MatDefs/Light/Lighting.j3md")]
+        sphere-mat    (material "Common/MatDefs/Light/Lighting.j3md")]
     (set* cube-1-mat :texture "ColorMap" cube-1-tex)
     (set* cube-1-geo :material cube-1-mat)
     (add-to-root cube-1-geo)

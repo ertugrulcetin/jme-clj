@@ -7,14 +7,13 @@
 
 
 (defn init []
-  (let [asset-manager (get-manager :asset)
-        box1          (box 1 1 1)
+  (let [box1          (box 1 1 1)
         blue          (geo "Box" box1)
-        mat1          (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")
+        mat1          (material "Common/MatDefs/Misc/Unshaded.j3md")
         mat1          (set* mat1 :color "Color" ColorRGBA/Blue)
         box2          (box 1 1 1)
         red           (geo "Box" box2)
-        mat2          (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")
+        mat2          (material "Common/MatDefs/Misc/Unshaded.j3md")
         mat2          (set* mat2 :color "Color" ColorRGBA/Red)
         pivot         (node "pivot")]
     (-> blue

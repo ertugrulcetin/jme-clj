@@ -40,10 +40,9 @@
 
 
 (defn init []
-  (let [box           (box 1 1 1)
-        player        (geo "Box" box)
-        asset-manager (get-manager :asset)
-        mat           (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")]
+  (let [box    (box 1 1 1)
+        player (geo "Box" box)
+        mat    (material "Common/MatDefs/Misc/Unshaded.j3md")]
     (set* mat :color "Color" ColorRGBA/Red)
     (set* player :material mat)
     (add-to-root player)

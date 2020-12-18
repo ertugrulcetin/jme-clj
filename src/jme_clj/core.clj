@@ -40,7 +40,8 @@
    (com.jme3.terrain.heightmap ImageBasedHeightMap HeightMap)
    (com.jme3.texture Texture)
    (com.jme3.util TangentBinormalGenerator)
-   (com.jme3.audio AudioNode AudioData$DataType)))
+   (com.jme3.audio AudioNode AudioData$DataType)
+   (com.jme3.effect ParticleEmitter)))
 
 (set! *warn-on-reflection* true)
 
@@ -137,6 +138,14 @@
   (doto an .playInstance))
 
 
+(defn particle-emitter [name type num-particles]
+  (ParticleEmitter. name type num-particles))
+
+
+(defn emit-all-particles [^ParticleEmitter pe]
+  (doto pe .emitAllParticles))
+
+
 (defn listener []
   (.getListener *app*))
 
@@ -218,8 +227,8 @@
   (Geometry. name mesh))
 
 
-(defn material [asset-manager path]
-  (Material. asset-manager path))
+(defn material [path]
+  (Material. (get-manager :asset) path))
 
 
 (defn color-rgba [r g b a]

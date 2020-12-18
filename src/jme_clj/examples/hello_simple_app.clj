@@ -9,8 +9,7 @@
 (defn init []
   (let [box           (box 1 1 1)
         geom          (geo "Box" box)
-        asset-manager (get-manager :asset)
-        mat           (material asset-manager "Common/MatDefs/Misc/Unshaded.j3md")]
+        mat           (material "Common/MatDefs/Misc/Unshaded.j3md")]
     (set* mat :color "Color" ColorRGBA/Blue)
     (set* geom :material mat)
     (add-to-root geom)))

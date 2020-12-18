@@ -8,11 +8,10 @@
 
 (defn init []
   (set* (fly-cam) :move-speed 50)
-  (let [asset-manager  (get-manager :asset)
-        grass          (set* (load-texture "Textures/Terrain/splat/grass.jpg") :wrap Texture$WrapMode/Repeat)
+  (let [grass          (set* (load-texture "Textures/Terrain/splat/grass.jpg") :wrap Texture$WrapMode/Repeat)
         dirt           (set* (load-texture "Textures/Terrain/splat/dirt.jpg") :wrap Texture$WrapMode/Repeat)
         rock           (set* (load-texture "Textures/Terrain/splat/road.jpg") :wrap Texture$WrapMode/Repeat)
-        mat            (material asset-manager "Common/MatDefs/Terrain/Terrain.j3md")
+        mat            (material "Common/MatDefs/Terrain/Terrain.j3md")
         height-map-tex (load-texture "Textures/Terrain/splat/mountains512.png")
         height-map     (->> height-map-tex image image-based-hm load-hm)
         patch-size     65
