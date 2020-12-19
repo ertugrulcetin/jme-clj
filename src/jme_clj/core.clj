@@ -640,6 +640,8 @@
 
 
 (defmacro run
+  "Every code that changes the state should be wrapped with `run` macro.
+   Otherwise `Make sure you do not modify the scene from another thread!` exception will be thrown."
   [app & body]
   `(binding [*app* ~app]
      (let [^Runnable f# (bound-fn* (fn [] ~@body))]
