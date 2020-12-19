@@ -9,8 +9,8 @@
 
 ;; for keeping internal *bindings* work, also the app. We need to define
 ;; listeners with `defn`. `def` should NOT be used!
-(defn action-listener []
-  (create-action-listener
+(defn on-action-listener []
+  (action-listener
    (fn [name pressed? tpf]
      (when (and (= name :shoot) (not pressed?))
        (let [{:keys [mark shootables]} (get-state)
@@ -68,7 +68,7 @@
   (apply-input-mapping
    {:triggers  {:shoot [(key-trigger KeyInput/KEY_SPACE)
                         (mouse-trigger MouseInput/BUTTON_LEFT)]}
-    :listeners {(action-listener) :shoot}}))
+    :listeners {(on-action-listener) :shoot}}))
 
 
 ;;A centred plus sign to help the player aim.

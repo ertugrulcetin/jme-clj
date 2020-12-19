@@ -413,21 +413,21 @@
   m)
 
 
-(defn create-action-listener [f]
+(defn action-listener [f]
   (let [f (bound-fn* f)]
     (proxy [ActionListener] []
       (onAction [name pressed? tpf]
         (f (keyword name) pressed? tpf)))))
 
 
-(defn create-analog-listener [f]
+(defn analog-listener [f]
   (let [f (bound-fn* f)]
     (proxy [AnalogListener] []
       (onAnalog [name value tpf]
         (f (keyword name) value tpf)))))
 
 
-(defn create-anim-listener [on-cycle-done on-anim-change]
+(defn anim-listener [on-cycle-done on-anim-change]
   (let [on-cycle-done  (bound-fn* on-cycle-done)
         on-anim-change (bound-fn* on-anim-change)]
     (proxy [AnimEventListener] []

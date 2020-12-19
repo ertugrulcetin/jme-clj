@@ -8,8 +8,10 @@
    (com.jme3.math ColorRGBA)))
 
 
-(def action-listener
-  (create-action-listener
+;; for keeping internal *bindings* work, also the app. We need to define
+;; listeners with `defn`. `def` should NOT be used!
+(defn on-action-listener []
+  (action-listener
    (fn [name pressed? tpf]
      (when (and (= name :walk) (not pressed?))
        (let [{:keys [channel]} (get-state)]
@@ -19,8 +21,8 @@
                (set* :loop-mode LoopMode/Loop))))))))
 
 
-(def anim-listener
-  (create-anim-listener
+(defn on-anim-listener []
+  (anim-listener
    (fn [control channel name]
      (when (= "Walk" name)
        (-> channel
@@ -33,7 +35,7 @@
 (defn- init-keys []
   (apply-input-mapping
    {:triggers  {:walk (key-trigger KeyInput/KEY_SPACE)}
-    :listeners {action-listener :walk}}))
+    :listeners {(on-action-listener) :walk}}))
 
 
 (defn init []
@@ -48,7 +50,7 @@
         ;; interop needs float casting
         (set* :local-scale (float 0.5))
         (add-to-root))
-    (add-anim-listener control anim-listener)
+    (add-anim-listener control (on-anim-listener))
     (set* channel :anim "stand")
     (init-keys)
     {:channel channel}))

@@ -7,8 +7,10 @@
            (com.jme3.audio AudioData$DataType)))
 
 
-(def action-listener
-  (create-action-listener
+;; for keeping internal *bindings* work, also the app. We need to define
+;; listeners with `defn`. `def` should NOT be used!
+(defn on-action-listener []
+  (action-listener
    (fn [name pressed? tpf]
      (when (and (= name :shoot) (not pressed?))
        (play (:audio-gun (get-state)))))))
@@ -17,7 +19,7 @@
 (defn- init-keys []
   (apply-input-mapping
    {:triggers  {:shoot (mouse-trigger MouseInput/BUTTON_LEFT)}
-    :listeners {action-listener :shoot}}))
+    :listeners {(on-action-listener) :shoot}}))
 
 
 (defn init-audio []

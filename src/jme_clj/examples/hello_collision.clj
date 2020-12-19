@@ -8,8 +8,10 @@
    (com.jme3.math ColorRGBA)))
 
 
-(defn action-listener []
-  (create-action-listener
+;; for keeping internal *bindings* work, also the app. We need to define
+;; listeners with `defn`. `def` should NOT be used!
+(defn on-action-listener []
+  (action-listener
    (fn [name pressed? tpf]
      (let [{:keys [player]} (get-state)]
        (if (= :jump name)
@@ -25,7 +27,7 @@
                 :up    (key-trigger KeyInput/KEY_W)
                 :down  (key-trigger KeyInput/KEY_S)
                 :jump  (key-trigger KeyInput/KEY_SPACE)}
-    :listeners {(action-listener) [:left :right :up :down :jump]}}))
+    :listeners {(on-action-listener) [:left :right :up :down :jump]}}))
 
 
 (defn- set-up-light []

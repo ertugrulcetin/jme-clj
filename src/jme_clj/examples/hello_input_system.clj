@@ -6,16 +6,18 @@
            (com.jme3.math ColorRGBA)))
 
 
-(def action-listener
-  (create-action-listener
+;; for keeping internal *bindings* work, also the app. We need to define
+;; listeners with `defn`. `def` should NOT be used!
+(defn on-action-listener []
+  (action-listener
    (fn [name pressed? tpf]
      (when (and (= name "Pause") (not pressed?))
        ;;TODO fix here
        (update-state update :running? not)))))
 
 
-(def analog-listener
-  (create-analog-listener
+(defn on-analog-listener []
+  (analog-listener
    (fn [name value tpf]
      (let [speed 1.0
            {:keys [player running?]} (get-state)
@@ -35,8 +37,8 @@
                 :right  (key-trigger KeyInput/KEY_K)
                 :rotate [(key-trigger KeyInput/KEY_SPACE)
                          (mouse-trigger MouseInput/BUTTON_LEFT)]}
-    :listeners {action-listener :pause
-                analog-listener [:left :right :rotate]}}))
+    :listeners {(on-action-listener) :pause
+                (on-analog-listener) [:left :right :rotate]}}))
 
 
 (defn init []
