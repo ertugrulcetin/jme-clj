@@ -45,7 +45,8 @@
 
 (set! *warn-on-reflection* true)
 
-(defonce states (atom {}))
+(defonce ^:private states (atom {}))
+;;TODO move it to states
 (defonce ^:private listeners (atom []))
 
 (def ^{:dynamic true
@@ -471,7 +472,7 @@
 
 
 ;;TODO check here, we might need to remove old ones
-;;TODO like in input listeners to avoid duplication!
+;;like in input listeners to avoid duplication!
 (defn add-anim-listener [^AnimControl control ^AnimEventListener listener]
   (.addListener control listener))
 
