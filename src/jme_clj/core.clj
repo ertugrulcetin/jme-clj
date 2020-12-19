@@ -567,7 +567,10 @@
    update fn and other fns. Also, this applies for the update fn, it's content merged to the global mutable state.
 
    It's not recommended to create multiple defsimpleapp instances inside one JVM.
-   Some odd behaviours might occur due to shared states. Please run new JVM instance per application."
+   Some odd behaviours might occur due to shared states. Please run new JVM instance per application.
+
+   If you would like to run another SimpleApplication instance inside the same JVM (same REPL),
+   an option could be using `unbind-app` for unbinding current app (var), and re-defining app with `defsimpleapp`."
   [name & {:keys [opts init update] :as m}]
   `(defonce ~name (simple-app ~m)))
 
