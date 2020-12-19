@@ -19,8 +19,19 @@
   (action-listener
    (fn [name pressed? tpf]
      (when (and (= name :shoot) (not pressed?))
-       ;;todo make balls
-       ))))
+       (let [{:keys [sphere stone-mat bullet-as]} (get-state)
+             ball-geo (-> (geo "cannon ball" sphere)
+                          (setc :material stone-mat
+                                :local-translation (get* (cam) :location))
+                          (add-to-root))
+             ball-phy (rigid-body-control 1.0)]
+         (add-control ball-geo ball-phy)
+         (-> bullet-as
+             (get* :physics-space)
+             (call* :add ball-phy))
+         (set* ball-phy :linear-velocity (-> (cam)
+                                             (get* :direction)
+                                             (mult 25))))))))
 
 
 (defn- set-up-keys []
@@ -60,10 +71,10 @@
 
 (defn- make-brick [loc box* wall-mat bullet-as]
   (let [brick-geo (-> (geo "brick" box*)
-                      (set* :material wall-mat)
+                      (setc :material wall-mat
+                            :local-translation loc)
                       (add-to-root))
-        brick-geo (set* brick-geo :local-translation loc)
-        brick-phy (rigid-body-control 0)]
+        brick-phy (rigid-body-control 2.0)]
     (add-control brick-geo brick-phy)
     (-> bullet-as
         (get* :physics-space)
@@ -82,7 +93,7 @@
         (call* :add floor-phy))))
 
 
-(defn- init-wall [box* wall-mat bullet-as]
+(defn- init-wall [bullet-as box* wall-mat]
   (let [startpt (atom (float (/ brick-length 4)))
         height  (atom 0)]
     (doseq [_ (range 15)]
@@ -109,14 +120,14 @@
     (attach bullet-as)
     (setc (cam) :location (vec3 0 4 6))
     (look-at (vec3 2 2 0) Vector3f/UNIT_Y)
-    (let [{:keys [wall-mat stone-mat floor-mat]} (init-materials)
-          _ (init-wall box* wall-mat bullet-as)
-          _ (init-floor bullet-as floor floor-mat)]
+    (set-up-keys)
+    (let [{:keys [wall-mat stone-mat floor-mat]} (init-materials)]
+      (init-wall bullet-as box* wall-mat)
+      (init-floor bullet-as floor floor-mat)
       (init-cross-hairs)
-      (merge {:sphere sphere*
-              :box    box*
-              :floor  floor
-              }))))
+      {:sphere    sphere*
+       :stone-mat stone-mat
+       :bullet-as bullet-as})))
 
 
 (defsimpleapp app :init init)
@@ -127,15 +138,5 @@
  (stop app)
 
  (re-init app init)
-
- (run app
-      #_(let [{:keys [bullet-as floor-phy]} (get-state)
-              floor-phy (set* floor-phy :mass 2.0)]
-          (-> bullet-as
-              (get* :physics-space)
-              (call* :add brick-phy)))
-      (doseq [b (:bricks @temp)]
-        (set* b :mass 2.0))
-      )
 
  (unbind-app #'app))
