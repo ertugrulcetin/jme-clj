@@ -563,6 +563,9 @@
                  :init init
                  :update simple-update)
 
+   When init fn returns a hash map, this map registered to the global mutable state so it can be accessed from
+   update fn and other fns. Also, this applies for the update fn, it's content merged to the global mutable state.
+
    It's not recommended to create multiple defsimpleapp instances inside one JVM.
    Some odd behaviours might occur due to shared states. Please run new JVM instance per application."
   [name & {:keys [opts init update] :as m}]
