@@ -531,7 +531,7 @@
 (defn start
   "Starts the SimpleApplication instance.
 
-   It's not recommended to call this fn after calling `stop` fn. Should be used for development purposes only.
+   It's not recommended to call `start` fn after calling `stop` fn. Should be used for development purposes only.
    Some odd behaviours might occur such as JVM crash (based on the app).
 
    If you would like to re-start the app then use `unbind-app` instead of `stop`,
@@ -548,13 +548,23 @@
   app)
 
 
-(defn stop [^SimpleApplication app]
+(defn stop
+  "Stops the SimpleApplication instance. Can be used when the user wants to exit from the game.
+
+   It's not recommended to call `start` fn after calling `stop` fn. Should be used for development purposes only.
+   Some odd behaviours might occur such as JVM crash (based on the app).
+
+   If you would like to re-start the app then use `unbind-app` instead of `stop`,
+   after re-defining app with `defsimpleapp` then call `start` again."
+  [^SimpleApplication app]
   (clear app)
   (swap! states assoc :stopped? true)
   (doto app (.stop true)))
 
 
-(defn re-init [app init-fn]
+(defn re-init
+  "Re-initializes the game with given init fn. It does not stop the app."
+  [app init-fn]
   (binding [*app* app]
     (swap! states assoc :initialized? false)
     (clear app)
