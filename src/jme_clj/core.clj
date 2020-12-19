@@ -610,19 +610,19 @@
       (println "Error occurred on stop."))))
 
 
+;;TODO after the call, stats are now shown
 (defn re-init
   "Re-initializes the app with given init fn. It does not stop the app.
    Can be used when new code changes needed for the init fn."
-  [app init-fn]
-  (binding [*app* app]
-    (swap! states assoc :initialized? false)
-    (clear app)
-    (let [init-result (init-fn)]
-      (if (map? init-result)
-        (swap! states assoc
-               ::app init-result
-               :initialized? true)
-        (swap! states #(assoc (dissoc %1 %2) :initialized? true) ::app)))))
+  [init-fn]
+  (swap! states assoc :initialized? false)
+  (clear *app*)
+  (let [init-result (init-fn)]
+    (if (map? init-result)
+      (swap! states assoc
+             ::app init-result
+             :initialized? true)
+      (swap! states #(assoc (dissoc %1 %2) :initialized? true) ::app))))
 
 
 (defn unbind-app

@@ -7,15 +7,15 @@
 
 
 (defn init []
-  (let [box1          (box 1 1 1)
-        blue          (geo "Box" box1)
-        mat1          (material "Common/MatDefs/Misc/Unshaded.j3md")
-        mat1          (set* mat1 :color "Color" ColorRGBA/Blue)
-        box2          (box 1 1 1)
-        red           (geo "Box" box2)
-        mat2          (material "Common/MatDefs/Misc/Unshaded.j3md")
-        mat2          (set* mat2 :color "Color" ColorRGBA/Red)
-        pivot         (node "pivot")]
+  (let [box1  (box 1 1 1)
+        blue  (geo "Box" box1)
+        mat1  (material "Common/MatDefs/Misc/Unshaded.j3md")
+        mat1  (set* mat1 :color "Color" ColorRGBA/Blue)
+        box2  (box 1 1 1)
+        red   (geo "Box" box2)
+        mat2  (material "Common/MatDefs/Misc/Unshaded.j3md")
+        mat2  (set* mat2 :color "Color" ColorRGBA/Red)
+        pivot (node "pivot")]
     (-> blue
         (set* :local-translation (vec3 1 -1 1))
         (set* :material mat1))
@@ -34,8 +34,10 @@
 
 (comment
  (start app)
- (stop app)
 
- (re-init app init)
+ ;;after calling unbind-app, we need to re-define the app with defsimpleapp
+ (unbind-app #'app)
 
- (unbind-app #'app))
+ (run app
+      (re-init init))
+ )

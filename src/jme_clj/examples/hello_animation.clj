@@ -61,8 +61,10 @@
 
 (comment
  (start app)
- (stop app)
 
- (re-init app init)
+ ;;after calling unbind-app, we need to re-define the app with defsimpleapp
+ (unbind-app #'app)
 
- (unbind-app #'app))
+ (run app
+      (re-init init))
+ )

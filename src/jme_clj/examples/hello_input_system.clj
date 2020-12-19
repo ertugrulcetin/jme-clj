@@ -45,7 +45,7 @@
   (let [box    (box 1 1 1)
         player (geo "Box" box)
         mat    (material "Common/MatDefs/Misc/Unshaded.j3md")]
-    (set* mat :color "Color" ColorRGBA/Red)
+    (set* mat :color "Color" ColorRGBA/Blue)
     (set* player :material mat)
     (add-to-root player)
     (init-keys)
@@ -57,8 +57,10 @@
 
 (comment
  (start app)
- (stop app)
 
- (re-init app init)
+ ;;after calling unbind-app, we need to re-define the app with defsimpleapp
+ (unbind-app #'app)
 
- (unbind-app #'app))
+ (run app
+      (re-init init))
+ )
