@@ -340,8 +340,9 @@
 
 (defmacro setc
   "Compact version of `set*`
-   When you need to pass multiple parameters, use a vector. e.g.:
-   (setc :local-translation [0.0 -5.0 -2.0])"
+   When you need to pass multiple parameters, use a vector.
+
+   e.g.: (setc :local-translation [0.0 -5.0 -2.0])"
   [obj & args]
   (p/unify-gensyms
    `(let [result## (eval ~`(do ~obj))]
@@ -508,6 +509,7 @@
    init   (initialize fn, required)
    update (update fn, optional)
    opts   (app settings, optional)
+
    e.g.:
    (defsimpleapp app
                  :opts {:show-settings?       false
@@ -580,6 +582,7 @@
   "Unbinds the SimpleApplication instance from the var. Should be used for development purposes only.
 
    e.g.: (unbind-app #'my-ns/app)
+
    After calling `unbind-app`, `app` can be re-defined with `defsimpleapp`."
   [^Var v]
   (when (bound? v)
