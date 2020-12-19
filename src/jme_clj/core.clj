@@ -15,7 +15,7 @@
    (com.jme3.bullet.util CollisionShapeFactory)
    (com.jme3.collision CollisionResults Collidable)
    (com.jme3.font BitmapText)
-   (com.jme3.input InputManager)
+   (com.jme3.input InputManager FlyByCamera)
    (com.jme3.input.controls
     ActionListener
     AnalogListener
@@ -99,7 +99,7 @@
 
 
 (defn detach-all-child [^Node node]
-  (doto node (.detachAllChildren)))
+  (doto node .detachAllChildren))
 
 
 (defn clear [^SimpleApplication app]
@@ -341,7 +341,7 @@
 (defmacro setc
   "Compact version of `set*`
    When you need to pass multiple parameters, use a vector. e.g.:
-   (setm :local-translation [0.0 -5.0 -2.0])"
+   (setc :local-translation [0.0 -5.0 -2.0])"
   [obj & args]
   (p/unify-gensyms
    `(let [result## (eval ~`(do ~obj))]
@@ -516,19 +516,41 @@
                                                :load-defaults? true
                                                :frame-rate     60}}
                  :init init
-                 :update simple-update)"
+                 :update simple-update)
+
+   It's not recommended to create multiple defsimpleapp instances inside one JVM.
+   Some odd behaviours might occur due to shared states. Please run new JVM instance per application."
   [name & {:keys [opts init update] :as m}]
   `(defonce ~name (simple-app ~m)))
 
 
-(defn start [^SimpleApplication app]
-  (doto app .start))
+(defn running? [^SimpleApplication app]
+  (boolean (some-> app .getContext .isCreated)))
 
 
-;;TODO stop app makes input not working after re-start
-;;TODO try to find a way
+(defn start
+  "Starts the SimpleApplication instance.
+
+   It's not recommended to call this fn after calling `stop` fn. Should be used for development purposes only.
+   Some odd behaviours might occur such as JVM crash (based on the app).
+
+   If you would like to re-start the app then use `unbind-app` instead of `stop`,
+   after re-defining app with `defsimpleapp` then call `start` again."
+  [^SimpleApplication app]
+  (.start app)
+  (when (:stopped? @states)
+    (binding [*app* app]
+      (loop [r? (running? *app*)]
+        (when-not r?
+          (Thread/sleep 10)
+          (recur (running? *app*))))
+      (.registerWithInput ^FlyByCamera (fly-cam) (input-manager))))
+  app)
+
+
 (defn stop [^SimpleApplication app]
   (clear app)
+  (swap! states assoc :stopped? true)
   (doto app (.stop true)))
 
 
@@ -545,16 +567,16 @@
 
 
 (defn unbind-app
-  "Should be used for development purposes. (unbind-app #'my-ns/app)
-   After calling `unbind-app`, `app` can be re-defined using `defsimpleapp`"
+  "Unbinds the SimpleApplication instance from the var. Should be used for development purposes only.
+
+   e.g.: (unbind-app #'my-ns/app)
+   After calling `unbind-app`, `app` can be re-defined with `defsimpleapp`."
   [^Var v]
   (when (bound? v)
     (stop @v)
+    (reset! states {})
+    (reset! listeners [])
     (.unbindRoot v)))
-
-
-(defn running? [^SimpleApplication app]
-  (boolean (some-> app .getContext .isCreated)))
 
 
 (defmacro run
