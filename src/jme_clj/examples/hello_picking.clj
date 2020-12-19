@@ -73,9 +73,9 @@
 
 ;;A centred plus sign to help the player aim.
 (defn init-cross-hairs []
-  (set* jme/*app* :display-stat-view false)
+  (set-display-stat-view false)
   (let [gui-font (load-font "Interface/Fonts/Default.fnt")
-        settings (-> jme/*app* (get* :context) (get* :settings))
+        settings (get* (context) :settings)
         ch       (bitmap-text gui-font false)]
     (-> ch
         (set* :size (-> gui-font

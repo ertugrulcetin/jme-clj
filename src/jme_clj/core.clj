@@ -30,7 +30,7 @@
     PointLight
     SpotLight)
    (com.jme3.material Material)
-   (com.jme3.math Vector3f Ray ColorRGBA)
+   (com.jme3.math Vector3f Ray ColorRGBA Vector2f)
    (com.jme3.renderer Camera)
    (com.jme3.scene Geometry Node Spatial Mesh)
    (com.jme3.scene.shape Box Sphere)
@@ -96,6 +96,17 @@
    (if (= normalize :normalize)
      (.normalize (Vector3f. x y z))
      (Vector3f. x y z))))
+
+
+(defn vec2
+  ([]
+   (Vector2f.))
+  ([x y]
+   (vec2 x y false))
+  ([x y normalize]
+   (if (= normalize :normalize)
+     (.normalize (Vector2f. x y))
+     (Vector2f. x y))))
 
 
 (defn detach-all-child [^Node node]
@@ -242,12 +253,19 @@
   (doto (asset-manager) (.registerLocator path locator)))
 
 
+(defn scale-texture-coords [^Mesh mesh scale-factor]
+  (doto mesh (.scaleTextureCoordinates scale-factor)))
+
+
 (defn create-mesh-shape [spatial]
   (CollisionShapeFactory/createMeshShape spatial))
 
 
-(defn rigid-body-control [shape mass]
-  (RigidBodyControl. shape mass))
+(defn rigid-body-control
+  ([^Float mass]
+   (RigidBodyControl. mass))
+  ([shape mass]
+   (RigidBodyControl. shape mass)))
 
 
 (defn attach [app-state]
@@ -268,6 +286,18 @@
   node)
 
 
+(defn context []
+  (.getContext *app*))
+
+
+(defn set-display-stat-view [show]
+  (doto *app* (.setDisplayStatView show)))
+
+
+(defn set-display-fps [show]
+  (doto *app* (.setDisplayFps show)))
+
+
 (defn light [type]
   (case type
     :directional (DirectionalLight.)
@@ -277,8 +307,11 @@
     :spot (SpotLight.)))
 
 
-(defn sphere [x y z]
-  (Sphere. x y z))
+(defn sphere
+  ([x y z]
+   (sphere x y z false false))
+  ([x y z use-even-slices? interior?]
+   (Sphere. x y z use-even-slices? interior?)))
 
 
 (defn generate [^Mesh mesh]
@@ -463,6 +496,13 @@
 
 (defn fly-cam []
   (.getFlyByCamera *app*))
+
+
+(defn look-at
+  ([pos world-up-vec]
+   (look-at (cam) pos world-up-vec))
+  ([^Camera cam pos world-up-vec]
+   (doto cam (.lookAt pos world-up-vec))))
 
 
 (defn collision-results []
