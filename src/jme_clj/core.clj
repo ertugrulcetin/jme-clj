@@ -58,14 +58,16 @@
   (::app @states))
 
 
-(defn update-state [f & args]
-  (apply swap! (into [states f] args)))
+(defn update-state [ks f & args]
+  (let [ks (if (vector? ks) ks [ks])
+        ks (into [::app] ks)]
+    (apply swap! (into [states update-in ks f] args))))
 
 
-(defn set-state [kws v]
-  (let [kws (if (vector? kws) kws [kws])
-        kws (into [::app] kws)]
-    (swap! states assoc-in kws v)))
+(defn set-state [ks v]
+  (let [ks (if (vector? ks) ks [ks])
+        ks (into [::app] ks)]
+    (swap! states assoc-in ks v)))
 
 
 (defn app-settings [load-defaults? & {:keys [fullscreen?
@@ -575,7 +577,7 @@
   "Starts the SimpleApplication instance.
 
    It's not recommended to call `start` fn after calling `stop` fn. Should be used for development purposes only.
-   Some odd behaviours might occur such as JVM crash (based on the app).
+   Some odd behaviours might occur such as JVM crash (based on the app, apps use Bullet API [not always]).
 
    If you would like to re-start the app then use `unbind-app` instead of `stop`,
    after re-defining app with `defsimpleapp` then call `start` again."
@@ -595,7 +597,7 @@
   "Stops the SimpleApplication instance. Can be used when the user wants to exit from the game.
 
    It's not recommended to call `start` fn after calling `stop` fn. Should be used for development purposes only.
-   Some odd behaviours might occur such as JVM crash (based on the app).
+   Some odd behaviours might occur such as JVM crash (based on the app, apps use Bullet API [not always]).
 
    If you would like to re-start the app then use `unbind-app` instead of `stop`,
    after re-defining app with `defsimpleapp` then call `start` again."
