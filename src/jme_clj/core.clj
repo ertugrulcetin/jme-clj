@@ -70,14 +70,16 @@
     (swap! states assoc-in ks v)))
 
 
-(defn app-settings [load-defaults? & {:keys [fullscreen?
-                                             vsync?
-                                             width
-                                             height
-                                             frequency
-                                             title
-                                             frame-rate
-                                             resizable?]}]
+(defn app-settings
+  "Creates an AppSettings instance."
+  [load-defaults? & {:keys [fullscreen?
+                            vsync?
+                            width
+                            height
+                            frequency
+                            title
+                            frame-rate
+                            resizable?]}]
   (let [settings (AppSettings. (boolean load-defaults?))]
     (some->> fullscreen? (.setFullscreen settings))
     (some->> vsync? (.setVSync settings))
@@ -116,7 +118,9 @@
   (doto node .detachAllChildren))
 
 
-(defn clear [^SimpleApplication app]
+(defn clear
+  "Detaches all child nodes and removes all local lights from the root node."
+  [^SimpleApplication app]
   (let [root-node (.getRootNode app)]
     (detach-all-child root-node)
     (.clear (.getLocalLightList root-node))
@@ -484,6 +488,21 @@
 
 
 (defmacro letj
+  "Executes the body and returns a hash map with key-val pairs that extracted from bindings. Ignores `_` bindings.
+
+  e.g.:
+  (letj [shootables (node \"Shootables\")
+         _ (init-keys)
+         _ (init-cross-hairs)
+         mark (init-mark)]
+        (-> shootables
+            (add-to-root)
+            (attach-child (make-cube \"the Deputy\" 1 0 -4))
+            (attach-child (make-floor))
+            (attach-child (make-char))))
+
+  => {:mark mark
+      :shootables shootables}"
   [bindings & body]
   (k/assert-all
    (vector? bindings) "a vector for its binding"
@@ -543,6 +562,8 @@
     (when (seq opts)
       (some->> opts :show-settings? (.setShowSettings app))
       (some->> opts :pause-on-lost-focus? (.setPauseOnLostFocus app))
+      (some->> opts :display-fps? (.setDisplayFps app))
+      (some->> opts :display-stat-view? (.setDisplayStatView app))
       (some->> opts :settings map->app-settings (.setSettings app)))
     app))
 
@@ -565,6 +586,8 @@
 
    When init fn returns a hash map, this map registered to the global mutable state so it can be accessed from
    update fn and other fns. Also, this applies for the update fn, it's content merged to the global mutable state.
+
+   For other settings options, please have a look `app-settings` fn.
 
    It's not recommended to create multiple defsimpleapp instances inside one JVM.
    Some odd behaviours might occur due to shared states. Please run new JVM instance per application.
