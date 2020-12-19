@@ -604,7 +604,10 @@
   [^SimpleApplication app]
   (clear app)
   (swap! states assoc :stopped? true)
-  (doto app (.stop true)))
+  (try
+    (doto app (.stop true))
+    (catch Throwable _
+      (println "Error occurred on stop."))))
 
 
 (defn re-init
@@ -639,4 +642,5 @@
 (defmacro run
   [app & body]
   `(binding [*app* ~app]
-     ~@body))
+     (let [^Runnable f# (bound-fn* (fn [] ~@body))]
+       (.enqueue *app* f#))))
