@@ -565,7 +565,7 @@
 
 
 (defn re-init
-  "Re-initializes the game with given init fn. It does not stop the app."
+  "Re-initializes the app with given init fn. It does not stop the app."
   [app init-fn]
   (binding [*app* app]
     (swap! states assoc :initialized? false)
