@@ -565,7 +565,8 @@
 
 
 (defn re-init
-  "Re-initializes the app with given init fn. It does not stop the app."
+  "Re-initializes the app with given init fn. It does not stop the app.
+   Can be used when new code changes needed for the init fn."
   [app init-fn]
   (binding [*app* app]
     (swap! states assoc :initialized? false)
