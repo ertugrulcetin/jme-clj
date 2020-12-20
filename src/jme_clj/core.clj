@@ -46,8 +46,7 @@
 (set! *warn-on-reflection* true)
 
 (defonce ^:private states (atom {}))
-;;TODO move it to states
-(defonce ^:private listeners (atom []))
+(defonce instances (atom []))
 
 (def ^{:dynamic true
        :tag     SimpleApplication}
@@ -636,7 +635,9 @@
    If you would like to run another SimpleApplication instance inside the same JVM (same REPL),
    an option could be using `unbind-app` for unbinding current app (var), and re-defining app with `defsimpleapp`."
   [name & {:keys [opts init update] :as m}]
-  `(defonce ~name (simple-app ~m)))
+  `(when-let [r# (defonce ~name (simple-app ~m))]
+     (swap! instances (fnil conj []) r#)
+     r#))
 
 
 (defn running? [^SimpleApplication app]
@@ -704,8 +705,20 @@
   (when (bound? v)
     (stop @v)
     (reset! states {})
-    (reset! listeners [])
     (.unbindRoot v)))
+
+
+(defn unbind-all
+  "Unbinds all SimpleApplication instances from the vars. Should be used for development purposes only.
+   Can be used for some leftover instances in the REPL.
+
+   e.g.: (unbind-all)
+
+   After calling `unbind-all`, `app` can be re-defined with `defsimpleapp`."
+  []
+  (doseq [v @instances]
+    (unbind-app v))
+  (reset! instances []))
 
 
 (defmacro run
