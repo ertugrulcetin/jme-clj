@@ -24,6 +24,23 @@ FIXME
 
 It is from Zach Oakes's **play-clj** library. This summarises the delicacy of the situation perfectly.
 
+## Recommended Learning Path
+
+- [REPL Based Tutorial](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/repl_based_tutorial.clj)
+- [Hello SimpleApplication](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_simple_app.clj)
+- [Hello Node](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_node.clj)
+- [Hello Asset](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_asset.clj)
+- [Hello Update Loop](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_update_loop.clj)
+- [Hello Input System](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_input_system.clj)
+- [Hello Material](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_material.clj)
+- [Hello Animation](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_animation.clj)
+- [Hello Picking](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_picking.clj)
+- [Hello Collision](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_collision.clj)
+- [Hello Terrain](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_terrain.clj)
+- [Hello Audio](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_audio.clj)
+- [Hello Effects](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_effects.clj)
+- [Hello Physics](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_physics.clj)
+
 ## TODOs
 
 - [ ] AbstractAppState creation support
