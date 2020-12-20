@@ -109,7 +109,7 @@
      (rotate cube2 0 (* 2 tpf) 0)))
 
  ;; I hope you liked the tutorial! One of the best things about writing a game in Clojure is that
- ;; you can modify it in a REPL while it's running. It's cool to have hot reloading for 3D game development.
+ ;; you can modify it in a REPL while it's running. It's cool to have hot reload for 3D game development.
 
  ;; If you have any questions, please reach me out through https://github.com/ertugrulcetin/jme-clj/issues
  )
