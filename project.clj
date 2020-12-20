@@ -72,11 +72,11 @@
                          ["eastwood"]]
             "clj-kondo" ["with-profile" "+dev" "run" "-m" "clj-kondo.main"]}
 
-  :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
-             "-XX:+ScavengeBeforeFullGC"
-             "-XX:+IgnoreUnrecognizedVMOptions"
-             "-Djava.net.preferIPv4Stack=true"
-             "-Dfile.encoding=UTF-8"]
+  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
+                       "-XX:+ScavengeBeforeFullGC"
+                       "-XX:+IgnoreUnrecognizedVMOptions"
+                       "-Djava.net.preferIPv4Stack=true"
+                       "-Dfile.encoding=UTF-8"]
 
   :profiles {:dev  {:dependencies [[clj-kondo "2020.10.10"]]
                     :repl-options {:init-ns jme-clj.core}}
