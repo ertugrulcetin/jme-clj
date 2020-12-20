@@ -450,11 +450,18 @@
   (MouseAxisTrigger. code negative?))
 
 
+(defn- kw->str [kw]
+  (if (qualified-keyword? kw)
+    (str (namespace kw) "/" (name kw))
+    (name kw)))
+
+
 (defn- create-input-mapping [m]
   (doseq [[k v] m]
-    (let [k             (name k)
+    (let [k             (kw->str k)
           input-manager (input-manager)]
-      (.deleteMapping input-manager k)
+      (when (.hasMapping input-manager k)
+        (.deleteMapping input-manager k))
       (.addMapping input-manager k (into-array Trigger (if (vector? v) v [v])))
       m)))
 
@@ -467,8 +474,8 @@
       (reset! listeners []))
     (doseq [[k v] m]
       (.addListener input-manager k (into-array String (if (vector? v)
-                                                         (mapv name v)
-                                                         (vector (name v)))))
+                                                         (mapv kw->str v)
+                                                         (vector (kw->str v)))))
       (swap! listeners conj k))
     m))
 

@@ -14,7 +14,7 @@
   (action-listener
    (fn [name pressed? tpf]
      (let [{:keys [player]} (get-state)]
-       (if (= :jump name)
+       (if (= ::jump name)
          (when pressed?
            (call* player :jump (vec3 0 20 0)))
          (set-state name pressed?))))))
@@ -22,12 +22,13 @@
 
 (defn- set-up-keys []
   (apply-input-mapping
-   {:triggers  {:left  (key-trigger KeyInput/KEY_A)
-                :right (key-trigger KeyInput/KEY_D)
-                :up    (key-trigger KeyInput/KEY_W)
-                :down  (key-trigger KeyInput/KEY_S)
-                :jump  (key-trigger KeyInput/KEY_SPACE)}
-    :listeners {(on-action-listener) [:left :right :up :down :jump]}}))
+   ;; Using qualified keywords for inputs is highly recommended!
+   {:triggers  {::left  (key-trigger KeyInput/KEY_A)
+                ::right (key-trigger KeyInput/KEY_D)
+                ::up    (key-trigger KeyInput/KEY_W)
+                ::down  (key-trigger KeyInput/KEY_S)
+                ::jump  (key-trigger KeyInput/KEY_SPACE)}
+    :listeners {(on-action-listener) [::left ::right ::up ::down ::jump]}}))
 
 
 (defn- set-up-light []

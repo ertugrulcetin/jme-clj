@@ -11,7 +11,7 @@
 (defn on-action-listener []
   (action-listener
    (fn [name pressed? tpf]
-     (when (and (= name :pause) (not pressed?))
+     (when (and (= name ::pause) (not pressed?))
        ;;TODO fix here
        (update-state update :running? not)))))
 
@@ -24,21 +24,22 @@
            v     (get* player :local-translation)]
        (when running?
          (case name
-           :rotate (rotate player 0 (* value speed) 0)
-           :right (set* player :local-translation (+ (.-x v) (* value speed)) (.-y v) (.-z v))
-           :left (set* player :local-translation (- (.-x v) (* value speed)) (.-y v) (.-z v))
+           ::rotate (rotate player 0 (* value speed) 0)
+           ::right (set* player :local-translation (+ (.-x v) (* value speed)) (.-y v) (.-z v))
+           ::left (set* player :local-translation (- (.-x v) (* value speed)) (.-y v) (.-z v))
            (println "Press P to unpause.")))))))
 
 
 (defn- init-keys []
   (apply-input-mapping
-   {:triggers  {:pause  (key-trigger KeyInput/KEY_P)
-                :left   (key-trigger KeyInput/KEY_J)
-                :right  (key-trigger KeyInput/KEY_K)
-                :rotate [(key-trigger KeyInput/KEY_SPACE)
-                         (mouse-trigger MouseInput/BUTTON_LEFT)]}
-    :listeners {(on-action-listener) :pause
-                (on-analog-listener) [:left :right :rotate]}}))
+   ;; Using qualified keywords for inputs is highly recommended!
+   {:triggers  {::pause  (key-trigger KeyInput/KEY_P)
+                ::left   (key-trigger KeyInput/KEY_J)
+                ::right  (key-trigger KeyInput/KEY_K)
+                ::rotate [(key-trigger KeyInput/KEY_SPACE)
+                          (mouse-trigger MouseInput/BUTTON_LEFT)]}
+    :listeners {(on-action-listener) ::pause
+                (on-analog-listener) [::left ::right ::rotate]}}))
 
 
 (defn init []

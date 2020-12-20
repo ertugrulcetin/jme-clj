@@ -13,14 +13,15 @@
 (defn on-action-listener []
   (action-listener
    (fn [name pressed? tpf]
-     (when (and (= name :shoot) (not pressed?))
+     (when (and (= name ::shoot) (not pressed?))
        (play (:audio-gun (get-state)))))))
 
 
 (defn- init-keys []
   (apply-input-mapping
-   {:triggers  {:shoot (mouse-trigger MouseInput/BUTTON_LEFT)}
-    :listeners {(on-action-listener) :shoot}}))
+   ;; Using qualified keywords for inputs is highly recommended!
+   {:triggers  {::shoot (mouse-trigger MouseInput/BUTTON_LEFT)}
+    :listeners {(on-action-listener) ::shoot}}))
 
 
 (defn init-audio []
