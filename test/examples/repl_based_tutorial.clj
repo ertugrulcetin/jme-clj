@@ -40,7 +40,7 @@
  ;; When init fn returns a hash map, it's value registered into the app's global mutable state,
  ;; so other fns can access for later use. This applies for the update fn as well.
  (defn init []
-   (let [player (geo "blue cube" (box 1 1 1))
+   (let [player (geo "jMonkey cube" (box 1 1 1))
          mat    (unshaded-mat)]
      (set* mat :texture "ColorMap" (load-texture "Interface/Logo/Monkey.jpg"))
      (set* player :material mat)
@@ -69,17 +69,26 @@
                       :pause-on-lost-focus? false
                       :settings             {:title          "My JME Game"
                                              :load-defaults? true
-                                             :frame-rate     60}}
+                                             :frame-rate     60
+                                             :width          800
+                                             :height         600}}
                :init init
                :update simple-update)
 
  ;; Starting the new app. Now, you won't see jMonkeyEngine's dialog because we set :show-settings? to false.
  ;; Since we set :pause-on-lost-focus? to false, we don't have to focus the cursor, cube is rotating.
- ;; FPS limit set to 60, and we have a new title `My JME Game`.
+ ;; FPS limit set to 60, and we have a new title `My JME Game`. Finally, resolution is 800x600.
  (start app)
+
+ ;; We can change the cube's position by setting its local translation.
+ ;; Please note that every state change related code should we wrapped with run macro!
+ (run app
+      (let [{:keys [player]} (get-state)]
+        (set* player :local-translation (add (get* player :local-translation) 1 1 1))))
 
  ;; By default, there is Fly Camera attached to the app that you can control with W,A,S,D keys. Let's increase it's
  ;; move speed. Now, you fly faster :)
  (run app
       (set* (fly-cam) :move-speed 15))
+
  )
