@@ -11,7 +11,7 @@
 ;; Run your REPL with `+test` profile, so the code will be able to access the `resources` folder.
 (comment
 
- (use 'jme-clj.core)
+ (require '[jme-clj.core :refer :all])
 
  (import '(com.jme3.math ColorRGBA))
 
