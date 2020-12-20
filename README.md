@@ -10,12 +10,6 @@ responsive and friendly.
 The engine is used by several commercial game studios and computer-science courses. Here's a taste:
 ![jME3 Games Mashup](https://i.imgur.com/nF8WOW6.jpg)
 
-## Usage
-
-Please note that the library still on development (alpha) stage, so there might be some breaking changes.
-
-FIXME
-
 ## Justification
 
 > The best thing about making a game in Clojure is that you can modify it in a REPL while it's running. By simply reloading a namespace, your code will be injected into the game, uninhibited by the restrictions posed by tools like HotSwap. Additionally, a REPL lets you read and modify the state of your game at runtime, so you can quickly experiment and diagnose problems.
@@ -23,6 +17,30 @@ FIXME
 > Clojure also brings the benefits of functional programming. This is becoming a big topic of discussion in gamedev circles, including by John Carmack. Part of this is due to the prevalence of multi-core hardware, making concurrency more important. Additionally, there is a general difficulty of maintaining object-oriented game codebases as they grow, due to complicated class hierarchies and state mutations.
 
 It is from Zach Oakes's **play-clj** library. This summarises the delicacy of the situation perfectly.
+
+## Installation
+
+## Usage
+
+Please note that the library still on development (alpha) stage, so there might be some breaking changes.
+
+```clojure
+(require '[jme-clj.core :refer :all])
+
+(import '(com.jme3.math ColorRGBA))
+
+(defn init []
+  (let [box  (box 1 1 1)
+        geom (geo "Box" box)
+        mat  (material "Common/MatDefs/Misc/Unshaded.j3md")]
+    (set* mat :color "Color" ColorRGBA/Blue)
+    (set* geom :material mat)
+    (add-to-root geom)))
+
+(defsimpleapp app :init init)
+
+(start app)
+```
 
 ## Recommended Learning Path
 
