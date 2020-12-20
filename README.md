@@ -11,9 +11,18 @@ The engine is used by several commercial game studios and computer-science cours
 ![jME3 Games Mashup](https://i.imgur.com/nF8WOW6.jpg)
 
 ## Usage
+
 Please note that the library still on development (pre-alpha) stage, so there might be some breaking changes.
 
 FIXME
+
+## Justification
+
+> The best thing about making a game in Clojure is that you can modify it in a REPL while it's running. By simply reloading a namespace, your code will be injected into the game, uninhibited by the restrictions posed by tools like HotSwap. Additionally, a REPL lets you read and modify the state of your game at runtime, so you can quickly experiment and diagnose problems.
+
+> Clojure also brings the benefits of functional programming. This is becoming a big topic of discussion in gamedev circles, including by John Carmack. Part of this is due to the prevalence of multi-core hardware, making concurrency more important. Additionally, there is a general difficulty of maintaining object-oriented game codebases as they grow, due to complicated class hierarchies and state mutations.
+
+It is from Zach Oakes's **play-clj** library. This summarises the delicacy of the situation perfectly.
 
 ## License
 
