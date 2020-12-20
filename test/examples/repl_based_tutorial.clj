@@ -35,8 +35,8 @@
  ;; our app will start.
  (start app)
 
- ;; It's time to add some magic. Let's rotate the cube. First of all, we're going to re-define the init fn
- ;; Can you spot the only change? Yes, we're returning a hash map that holds cube data.
+ ;; It's time to add some magic. Let's rotate the cube. First of all, we're going to re-define the init fn.
+ ;; Can you spot the change? Yes, we're returning a hash map that holds cube data.
  ;; When init fn returns a hash map, its value is registered into the app's global mutable state,
  ;; so other fns can access it for later use. This applies to the update fn as well.
  (defn init []
