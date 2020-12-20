@@ -12,7 +12,7 @@ The engine is used by several commercial game studios and computer-science cours
 
 ## Usage
 
-Please note that the library still on development (pre-alpha) stage, so there might be some breaking changes.
+Please note that the library still on development (alpha) stage, so there might be some breaking changes.
 
 FIXME
 
@@ -23,6 +23,11 @@ FIXME
 > Clojure also brings the benefits of functional programming. This is becoming a big topic of discussion in gamedev circles, including by John Carmack. Part of this is due to the prevalence of multi-core hardware, making concurrency more important. Additionally, there is a general difficulty of maintaining object-oriented game codebases as they grow, due to complicated class hierarchies and state mutations.
 
 It is from Zach Oakes's **play-clj** library. This summarises the delicacy of the situation perfectly.
+
+## TODOs
+
+- [ ] AbstractAppState creation support
+- [ ] AbstractControl creation support
 
 ## License
 
