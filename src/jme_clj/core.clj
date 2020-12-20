@@ -45,7 +45,7 @@
 
 (set! *warn-on-reflection* true)
 
-(defonce ^:private states (atom {}))
+(defonce states (atom {}))
 (defonce instances (atom []))
 
 (def ^{:dynamic true
@@ -107,6 +107,63 @@
     (some->> frame-rate (.setFrameRate settings))
     (some->> resizable? (.setResizable settings))
     settings))
+
+
+(defprotocol Matrix
+  (mult [this scalar])
+  (mult-loc [this scalar])
+  (add [this v] [this x y] [this x y z])
+  (add-loc [this v] [this x y z])
+  (setv [this v] [this x y] [this x y z])
+  (negate [this]))
+
+
+(extend-protocol Matrix
+  Vector3f
+  (mult [this ^Float scalar]
+    (.mult this scalar))
+  (mult-loc [this ^Float scalar]
+    (.multLocal this scalar))
+  (add
+    ([this v]
+     (.add this v))
+    ([this x y z]
+     (.add this x y z)))
+  (add-loc
+    ([this v]
+     (.addLocal this v))
+    ([this x y z]
+     (.addLocal this x y z)))
+  (setv
+    ([this v]
+     (.set this v))
+    ([this x y z]
+     (.set this x y z)))
+  (negate [this]
+    (.negate this))
+
+  Vector2f
+  (mult [this ^Float scalar]
+    (.mult this scalar))
+  (mult-loc [this ^Float scalar]
+    (.multLocal this scalar))
+  (add
+    ([this v]
+     (.add this v))
+    ([this x y]
+     (.add this x y)))
+  (add-loc
+    ([this v]
+     (.addLocal this v))
+    ([this x y]
+     (.addLocal this x y)))
+  (setv
+    ([this v]
+     (.set this v))
+    ([this x y]
+     (.set this x y)))
+  (negate [this]
+    (.negate this)))
 
 
 (defn vec3
@@ -222,41 +279,6 @@
 
 (defn bitmap-text [gui-font right-to-left]
   (BitmapText. gui-font right-to-left))
-
-
-(defn mult [^Vector3f v ^Float scalar]
-  (.mult v scalar))
-
-
-;;TODO change name to vec3-mult-local or something
-;;vec2 has this too
-(defn mult-local [^Vector3f v ^Float scalar]
-  (.multLocal v scalar))
-
-
-(defn add-v3
-  ([^Vector3f v ^Vector3f v2]
-   (.add v v2))
-  ([^Vector3f v x y z]
-   (.add v x y z)))
-
-
-(defn add-v3-local
-  ([^Vector3f v ^Vector3f v2]
-   (.addLocal v v2))
-  ([^Vector3f v x y z]
-   (.addLocal v x y z)))
-
-
-(defn set-v3
-  ([^Vector3f v ^Vector3f v2]
-   (.set v v2))
-  ([^Vector3f v x y z]
-   (.set v x y z)))
-
-
-(defn negate [^Vector3f v]
-  (.negate v))
 
 
 (defn box [x y z]
@@ -601,32 +623,6 @@
   (.size o))
 
 
-(defn simple-app
-  "Creates a SimpleApplication instance, please have a look at com.jme3.app.SimpleApplication for more."
-  [{:keys [opts init] :as m}]
-  (let [app (proxy [SimpleApplication] []
-              (simpleInitApp []
-                (binding [*app* this]
-                  ;;re-init and this block has to be same.
-                  (let [init-result (init)]
-                    (when (map? init-result)
-                      (swap! states assoc ::app init-result)))))
-              (simpleUpdate [tpf]
-                (when (-> @states :initialized? false? not)
-                  (binding [*app* this]
-                    (let [update-result ((or (:update m)
-                                             (constantly nil)) tpf)]
-                      (when (map? update-result)
-                        (swap! states update ::app merge update-result)))))))]
-    (when (seq opts)
-      (some->> opts :show-settings? (.setShowSettings app))
-      (some->> opts :pause-on-lost-focus? (.setPauseOnLostFocus app))
-      (some->> opts :display-fps? (.setDisplayFps app))
-      (some->> opts :display-stat-view? (.setDisplayStatView app))
-      (some->> opts :settings map->app-settings (.setSettings app)))
-    app))
-
-
 (defmacro defsimpleapp
   "Creates a SimpleApplication instance and binds with given name. Requires 3 parameters besides name.
    init   (initialize fn, required)
@@ -652,9 +648,32 @@
    Some odd behaviours might occur due to shared states. Please run new JVM instance per application.
 
    If you would like to run another SimpleApplication instance inside the same JVM (same REPL),
-   an option could be using `unbind-app` for unbinding current app (var), and re-defining app with `defsimpleapp`."
-  [name & {:keys [opts init update] :as m}]
-  `(when-let [r# (defonce ~name (simple-app ~m))]
+   an option could be using `unbind-app` for unbinding current app (var), and re-defining app with `defsimpleapp`.
+
+   Please have a look at com.jme3.app.SimpleApplication for more."
+  [name & {:keys [opts init update]}]
+  `(when-let [r# (defonce ~name
+                          (let [app# (proxy [SimpleApplication] []
+                                       (simpleInitApp []
+                                         (binding [*app* ~'this]
+                                           ;;re-init and this block has to be same.
+                                           (let [init-result# (~init)]
+                                             (when (map? init-result#)
+                                               (swap! states assoc ::app init-result#)))))
+                                       (simpleUpdate [tpf#]
+                                         (when (-> @states :initialized? false? not)
+                                           (binding [*app* ~'this]
+                                             (let [update-result# ((or ~update
+                                                                       (constantly nil)) tpf#)]
+                                               (when (map? update-result#)
+                                                 (swap! states clojure.core/update ::app merge update-result#)))))))]
+                            (when (seq ~opts)
+                              (some->> ~opts :show-settings? (.setShowSettings app#))
+                              (some->> ~opts :pause-on-lost-focus? (.setPauseOnLostFocus app#))
+                              (some->> ~opts :display-fps? (.setDisplayFps app#))
+                              (some->> ~opts :display-stat-view? (.setDisplayStatView app#))
+                              (some->> ~opts :settings map->app-settings (.setSettings app#)))
+                            app#))]
      (swap! instances (fnil conj []) r#)
      r#))
 

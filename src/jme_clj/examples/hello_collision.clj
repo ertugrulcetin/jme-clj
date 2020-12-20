@@ -1,7 +1,6 @@
 (ns jme-clj.examples.hello-collision
   "Clojure version of https://wiki.jmonkeyengine.org/docs/3.3/tutorials/beginner/hello_collision.html"
-  (:require [clojure.string :as str]
-            [jme-clj.core :refer :all])
+  (:require [jme-clj.core :refer :all])
   (:import
    (com.jme3.asset.plugins ZipLocator)
    (com.jme3.input KeyInput)
@@ -12,12 +11,12 @@
 ;; listeners with `defn`. `def` should NOT be used!
 (defn on-action-listener []
   (action-listener
-   (fn [name pressed? tpf]
+   (fn [name* pressed? tpf]
      (let [{:keys [player]} (get-state)]
-       (if (= ::jump name)
+       (if (= ::jump name*)
          (when pressed?
            (call* player :jump (vec3 0 20 0)))
-         (set-state name pressed?))))))
+         (set-state (-> name* name keyword) pressed?))))))
 
 
 (defn- set-up-keys []
@@ -85,16 +84,16 @@
                 left
                 right
                 up
-                down] :as m} (get-state)
-        cam-dir        (-> cam-dir (set-v3 (get* (cam) :direction)) (mult-local 0.6))
-        cam-left       (-> cam-left (set-v3 (get* (cam) :left)) (mult-local 0.4))
-        walk-direction (set-v3 walk-direction 0 0 0)
+                down]} (get-state)
+        cam-dir        (-> cam-dir (setv (get* (cam) :direction)) (mult-loc 0.6))
+        cam-left       (-> cam-left (setv (get* (cam) :left)) (mult-loc 0.4))
+        walk-direction (setv walk-direction 0 0 0)
         direction      (cond
                          left cam-left
                          right (negate cam-left)
                          up cam-dir
                          down (negate cam-dir))
-        walk-direction (or (some->> direction (add-v3-local walk-direction))
+        walk-direction (or (some->> direction (add-loc walk-direction))
                            walk-direction)]
     ;;since we mutate objects internally, we don't need to return hash-map in here
     (set* player :walk-direction walk-direction)
