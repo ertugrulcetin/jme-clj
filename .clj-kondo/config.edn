@@ -1,9 +1,9 @@
 {:lint-as {kezban.core/try->         clojure.core/->
            jme-clj.core/letj         clojure.core/let
            jme-clj.core/defsimpleapp clojure.core/def}
- :linters {:unresolved-symbol   {:exclude [(kezban.core/if-let*)
-                                           (kezban.core/when-let*)]}
-           :unused-binding      {:level                                :warning
-                                 :exclude-destructured-keys-in-fn-args true}
-           :unused-vars         :off
-           :deprecated-var      :off}}
+ :linters {:unresolved-symbol {:exclude [(kezban.core/if-let*)
+                                         (kezban.core/when-let*)]}
+           :unused-binding    {:level                                :warning
+                               :exclude-destructured-keys-in-fn-args true}
+           :unused-var        :off
+           :deprecated-var    :off}}

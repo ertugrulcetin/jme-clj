@@ -73,8 +73,9 @@
     (apply swap! (into [states update-in ks f] args))))
 
 
-(defn set-state [ks v]
+(defn set-state
   "Sets a key-value pair inside :jme-clj.core/app entry. It's used for updating SimpleApplication's state."
+  [ks v]
   (let [ks (if (vector? ks) ks [ks])
         ks (into [::app] ks)]
     (swap! states assoc-in ks v)))

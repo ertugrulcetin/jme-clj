@@ -57,9 +57,9 @@
           :source-paths ["src" "test"]}
 
   :bikeshed {:max-line-length 120
-             :source-paths    ["src"]}
+             :source-paths    ["src" "test"]}
 
-  :carve {:paths   ["src"]
+  :carve {:paths   ["src" "test"]
           :dry-run true
           :report  {:format :text}}
 
@@ -67,7 +67,7 @@
                          ["nsort"]
                          ["bikeshed"]
                          ["carve"]
-                         ["clj-kondo" "--lint" "src"]
+                         ["clj-kondo" "--lint" "src" "test"]
                          ["kibit"]
                          ["eastwood"]]
             "clj-kondo" ["with-profile" "+dev" "run" "-m" "clj-kondo.main"]}

@@ -1,1 +1,0 @@
-These tutorials are Clojure version of https://wiki.jmonkeyengine.org/docs/3.3/tutorials/beginner/beginner.html
