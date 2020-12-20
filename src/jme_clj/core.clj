@@ -534,7 +534,8 @@
 
 
 ;;TODO check here, we might need to remove old ones
-;;like in input listeners to avoid duplication!
+;;like in input listeners to avoid duplication
+;;UPDATE: so far so good, no problem occurred, let's keep this comment for a while
 (defn add-anim-listener [^AnimControl control ^AnimEventListener listener]
   (.addListener control listener))
 
