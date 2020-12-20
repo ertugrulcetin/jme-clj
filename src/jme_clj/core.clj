@@ -453,7 +453,7 @@
 (defn- kw->str [kw]
   (if (qualified-keyword? kw)
     (str (namespace kw) "/" (name kw))
-    (name kw)))
+    (throw (IllegalArgumentException. (format "%s is not qualified keyword." kw)))))
 
 
 (defn- create-input-mapping [m]
@@ -466,17 +466,23 @@
       m)))
 
 
-;;TODO we're still removing all listeners!
+(defn- ns-from-q-kw [m-names]
+  (if (coll? m-names)
+    (-> m-names first namespace)
+    (namespace m-names)))
+
+
 (defn- register-input-mapping [m]
-  (let [input-manager (input-manager)]
-    (doseq [l @listeners]
-      (.removeListener input-manager l)
-      (reset! listeners []))
-    (doseq [[k v] m]
-      (.addListener input-manager k (into-array String (if (vector? v)
-                                                         (mapv kw->str v)
-                                                         (vector (kw->str v)))))
-      (swap! listeners conj k))
+  (let [input-manager (input-manager)
+        ns*           (-> m first second ns-from-q-kw)]
+    (doseq [listener (get-in @states [:listeners ns*])]
+      (.removeListener input-manager listener)
+      (swap! states update :listeners dissoc ns*))
+    (doseq [[listener m-names] m]
+      (.addListener input-manager listener (into-array String (if (vector? m-names)
+                                                                (mapv kw->str m-names)
+                                                                (vector (kw->str m-names)))))
+      (swap! states update-in [:listeners (ns-from-q-kw m-names)] (fnil conj []) listener))
     m))
 
 
