@@ -294,6 +294,10 @@
   (Material. (asset-manager) path))
 
 
+(defn unshaded-mat []
+  (material "Common/MatDefs/Misc/Unshaded.j3md"))
+
+
 (defn color-rgba [r g b a]
   (ColorRGBA. r g b a))
 
