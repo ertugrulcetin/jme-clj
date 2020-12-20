@@ -53,20 +53,38 @@
   *app* nil)
 
 
-(defn get-state []
+(defn get-main-state
+  "Returns the global mutable state map for the whole application."
+  []
+  @states)
+
+
+(defn get-state
+  "Returns value of :jme-clj.core/app key. It's used for keeping SimpleApplication's state."
+  []
   (::app @states))
 
 
-(defn update-state [ks f & args]
+(defn update-state
+  "Updates :jme-clj.core/app entry. It's used for updating SimpleApplication's state."
+  [ks f & args]
   (let [ks (if (vector? ks) ks [ks])
         ks (into [::app] ks)]
     (apply swap! (into [states update-in ks f] args))))
 
 
 (defn set-state [ks v]
+  "Sets a key-value pair inside :jme-clj.core/app entry. It's used for updating SimpleApplication's state."
   (let [ks (if (vector? ks) ks [ks])
         ks (into [::app] ks)]
     (swap! states assoc-in ks v)))
+
+
+(defn remove-state
+  "Removes a key inside :jme-clj.core/app entry. It's used for updating SimpleApplication's state."
+  [ks]
+  (let [ks (if (vector? ks) ks [ks])]
+    (swap! states update ::app k/dissoc-in ks)))
 
 
 (defn app-settings

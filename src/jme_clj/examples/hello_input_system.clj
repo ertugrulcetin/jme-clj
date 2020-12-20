@@ -12,8 +12,7 @@
   (action-listener
    (fn [name pressed? tpf]
      (when (and (= name ::pause) (not pressed?))
-       ;;TODO fix here
-       (update-state update :running? not)))))
+       (update-state :running? not)))))
 
 
 (defn on-analog-listener []
