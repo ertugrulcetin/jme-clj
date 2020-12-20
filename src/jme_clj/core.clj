@@ -211,6 +211,8 @@
   (.mult v scalar))
 
 
+;;TODO change name to vec3-mult-local or something
+;;vec2 has this too
 (defn mult-local [^Vector3f v ^Float scalar]
   (.multLocal v scalar))
 
@@ -364,25 +366,44 @@
   (TerrainLodControl. terrain camera))
 
 
-(defmacro set* [obj kw & args]
+(defmacro set*
+  "Java interop for methods with `set` prefix.
+   e.g.: (set* channel :speed 1.0) -> (.setSpeed channel 1.0)"
+  [obj kw & args]
   `(let [result# (eval ~`(do ~obj))]
      (~(symbol (csk/->camelCase (str ".set-" (name kw)))) result# ~@args)
      result#))
 
 
-(defmacro get* [obj kw & args]
+(defmacro get*
+  "Java interop for methods with `get` prefix.
+   e.g.: (get* (cam) :rotation) -> (.getRotation (cam))"
+  [obj kw & args]
   `(~(symbol (csk/->camelCase (str ".get-" (name kw)))) ~obj ~@args))
 
 
-(defmacro call* [obj kw & args]
+(defmacro call*
+  "Java interop for methods. Since we can't wrap all functions of jMonkeyEngine it's a shortcut for calling them."
+  [obj kw & args]
   `(~(symbol (csk/->camelCase (str "." (name kw)))) ~obj ~@args))
 
 
 (defmacro setc
   "Compact version of `set*`
-   When you need to pass multiple parameters, use a vector.
+   e.g.:
+   (setc debris
+         :material mat-debris
+         :images-x 3
+         :images-y 3
+         :rotate-speed 4
+         :select-random-image true
+         :start-color ColorRGBA/White
+         :gravity [0 6 0]
+         :low-life 1
+         :high-life 3)
 
-   e.g.: (setc :local-translation [0.0 -5.0 -2.0])"
+    When you need to pass multiple parameters, use a vector.
+    e.g.: (setc :local-translation [0.0 -5.0 -2.0])"
   [obj & args]
   (p/unify-gensyms
    `(let [result## (eval ~`(do ~obj))]
@@ -544,7 +565,9 @@
   (.size o))
 
 
-(defn simple-app [{:keys [opts init] :as m}]
+(defn simple-app
+  "Creates a SimpleApplication instance, please have a look at com.jme3.app.SimpleApplication for more."
+  [{:keys [opts init] :as m}]
   (let [app (proxy [SimpleApplication] []
               (simpleInitApp []
                 (binding [*app* this]
