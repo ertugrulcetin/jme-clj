@@ -367,7 +367,9 @@
 
 
 (defmacro set*
-  "Java interop for methods with `set` prefix.
+  "Java interop for methods with `set` prefix. Since it returns the given object,
+   this fn can be chained with other `set*`s using the thread-first `->` macro.
+
    e.g.: (set* channel :speed 1.0) -> (.setSpeed channel 1.0)"
   [obj kw & args]
   `(let [result# (eval ~`(do ~obj))]
@@ -377,13 +379,16 @@
 
 (defmacro get*
   "Java interop for methods with `get` prefix.
+
    e.g.: (get* (cam) :rotation) -> (.getRotation (cam))"
   [obj kw & args]
   `(~(symbol (csk/->camelCase (str ".get-" (name kw)))) ~obj ~@args))
 
 
 (defmacro call*
-  "Java interop for methods. Since we can't wrap all functions of jMonkeyEngine it's a shortcut for calling them."
+  "Java interop for methods. Since we can't wrap all functions of jMonkeyEngine, we can use a shortcut like this.
+
+   e.g.: (call* player :jump (vec3 0 20 0)) -> (.jump player (vec3 0 20 0))"
   [obj kw & args]
   `(~(symbol (csk/->camelCase (str "." (name kw)))) ~obj ~@args))
 
