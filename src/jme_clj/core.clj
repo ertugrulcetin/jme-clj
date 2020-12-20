@@ -662,7 +662,6 @@
       (println "Error occurred on stop."))))
 
 
-;;TODO after the call, stats are now shown
 (defn re-init
   "Re-initializes the app with given init fn. It does not stop the app.
    Can be used when new code changes needed for the init fn."
