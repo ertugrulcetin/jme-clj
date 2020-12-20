@@ -78,5 +78,7 @@
              "-Djava.net.preferIPv4Stack=true"
              "-Dfile.encoding=UTF-8"]
 
-  :profiles {:dev {:dependencies [[clj-kondo "2020.10.10"]]
-                   :repl-options {:init-ns jme-clj.core}}})
+  :profiles {:dev  {:dependencies [[clj-kondo "2020.10.10"]]
+                    :repl-options {:init-ns jme-clj.core}}
+             :test {:dependencies   [[clj-kondo "2020.10.10"]]
+                    :resource-paths ["test/resources"]}})
