@@ -2,9 +2,10 @@
   "Clojure version of https://wiki.jmonkeyengine.org/docs/3.3/tutorials/beginner/hello_audio.html"
   (:require
    [jme-clj.core :refer :all])
-  (:import (com.jme3.input MouseInput)
-           (com.jme3.math ColorRGBA)
-           (com.jme3.audio AudioData$DataType)))
+  (:import
+   (com.jme3.audio AudioData$DataType)
+   (com.jme3.input MouseInput)
+   (com.jme3.math ColorRGBA)))
 
 
 ;; for keeping internal *bindings* work, also the app. We need to define

@@ -9,11 +9,13 @@
    (com.jme3.app SimpleApplication)
    (com.jme3.app.state AppStateManager)
    (com.jme3.asset AssetManager)
+   (com.jme3.audio AudioNode AudioData$DataType)
    (com.jme3.bullet BulletAppState)
    (com.jme3.bullet.collision.shapes CapsuleCollisionShape)
    (com.jme3.bullet.control RigidBodyControl CharacterControl)
    (com.jme3.bullet.util CollisionShapeFactory)
    (com.jme3.collision CollisionResults Collidable)
+   (com.jme3.effect ParticleEmitter)
    (com.jme3.font BitmapText)
    (com.jme3.input InputManager FlyByCamera)
    (com.jme3.input.controls
@@ -39,9 +41,7 @@
    (com.jme3.terrain.geomipmap TerrainQuad TerrainLodControl)
    (com.jme3.terrain.heightmap ImageBasedHeightMap HeightMap)
    (com.jme3.texture Texture)
-   (com.jme3.util TangentBinormalGenerator)
-   (com.jme3.audio AudioNode AudioData$DataType)
-   (com.jme3.effect ParticleEmitter)))
+   (com.jme3.util TangentBinormalGenerator)))
 
 (set! *warn-on-reflection* true)
 
