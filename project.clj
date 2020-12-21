@@ -1,6 +1,6 @@
 (def jme-version "3.2.2-stable")
 
-(defproject jme-clj "0.1.0-SNAPSHOT"
+(defproject jme-clj "0.1.0"
 
   :description "A Clojure 3D Game Engine Wrapper, Powered By jMonkeyEngine"
 
