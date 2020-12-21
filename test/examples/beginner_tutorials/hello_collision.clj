@@ -1,3 +1,4 @@
+;; Please start your REPL with `+test` profile
 (ns examples.beginner-tutorials.hello-collision
   "Clojure version of https://wiki.jmonkeyengine.org/docs/3.3/tutorials/beginner/hello_collision.html"
   (:require [jme-clj.core :refer :all])
