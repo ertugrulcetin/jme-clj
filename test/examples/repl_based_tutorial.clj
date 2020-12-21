@@ -52,6 +52,7 @@
  (run app
       (re-init init))
 
+ ;; Now, we're filling simple-update's body.
  ;; When you focus your cursor on the app, you'll see that the cube is rotating. Update fn (simple-update) does not
  ;; need something like `re-update` fn. init fn is only called once. That's why we re-initialize with re-init.
  ;; On the other hand, the app is constantly calling the simple-update fn.

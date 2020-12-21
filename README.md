@@ -22,8 +22,8 @@ It is from Zach Oakes's **play-clj** library. This summarises the delicacy of th
 
 ## Usage
 
-Please note that the library still on development (alpha) stage, so there might be some breaking changes. Please have a
-look [/test/examples](https://github.com/ertugrulcetin/jme-clj/tree/master/test/examples) for more.
+Please note that the library still in the development (alpha) stage, so there might be some breaking changes. Please
+have a look [/test/examples](https://github.com/ertugrulcetin/jme-clj/tree/master/test/examples) for more.
 
 ```clojure
 (require '[jme-clj.core :refer :all])
