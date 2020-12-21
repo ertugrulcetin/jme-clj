@@ -19,6 +19,7 @@ The engine is used by several commercial game studios and computer-science cours
 It is from Zach Oakes's **play-clj** library. This summarises the delicacy of the situation perfectly.
 
 ## Installation
+[![Clojars Project](https://clojars.org/jme-clj/latest-version.svg)](https://clojars.org/jme-clj)
 
 ## Usage
 
