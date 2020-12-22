@@ -61,6 +61,10 @@ have a look [/test/examples](https://github.com/ertugrulcetin/jme-clj/tree/maste
 - [Hello Effects](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_effects.clj)
 - [Hello Physics](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_physics.clj)
 
+## Demo Video
+
+[![jme-clj | Clojure 3D Game Development Demo](https://img.youtube.com/vi/IOPz9I49snM/0.jpg)](https://www.youtube.com/watch?v=IOPz9I49snM)
+
 ## TODOs
 
 - [ ] AbstractAppState creation support
