@@ -1,13 +1,14 @@
 (ns jme-clj.core
   (:require
    [camel-snake-kebab.core :as csk]
+   [clojure.string :as str]
    [kezban.core :as k]
    [potemkin :as p])
   (:import
    (clojure.lang Var)
    (com.jme3.animation AnimEventListener AnimControl AnimChannel)
    (com.jme3.app SimpleApplication)
-   (com.jme3.app.state AppStateManager)
+   (com.jme3.app.state AppStateManager BaseAppState)
    (com.jme3.asset AssetManager)
    (com.jme3.audio AudioNode AudioData$DataType)
    (com.jme3.bullet BulletAppState)
@@ -193,15 +194,6 @@
   (doto node .detachAllChildren))
 
 
-(defn clear
-  "Detaches all child nodes and removes all local lights from the root node."
-  [^SimpleApplication app]
-  (let [root-node (.getRootNode app)]
-    (detach-all-child root-node)
-    (.clear (.getLocalLightList root-node))
-    root-node))
-
-
 (defn ^AssetManager asset-manager []
   (.getAssetManager *app*))
 
@@ -323,6 +315,10 @@
 
 (defn attach [app-state]
   (doto (state-manager) (.attach app-state)))
+
+
+(defn detach [app-state]
+  (doto (state-manager) (.detach app-state)))
 
 
 (defn attach-child [^Node node ^Spatial s]
@@ -494,10 +490,19 @@
   (MouseAxisTrigger. code negative?))
 
 
+(defn- raise
+  ([msg]
+   (raise msg {}))
+  ([msg map]
+   (raise msg map nil))
+  ([msg map cause]
+   (throw (ex-info msg map cause))))
+
+
 (defn- kw->str [kw]
   (if (qualified-keyword? kw)
     (str (namespace kw) "/" (name kw))
-    (throw (IllegalArgumentException. (format "%s is not qualified keyword." kw)))))
+    (raise (format "%s is not qualified keyword." kw))))
 
 
 (defn- create-input-mapping [m]
@@ -683,6 +688,35 @@
      r#))
 
 
+(defn- apply-fn-in-app [app kw f & args]
+  (binding [*app* app]
+    (let [result (apply f args)]
+      (if (map? result)
+        (swap! states update-in [::app-states kw] merge result)))))
+
+
+(defn base-app-state [kw & {:keys [init update cleanup on-enable on-disable]}]
+  (when-not (qualified-keyword? kw)
+    (raise (format "%s is not qualified keyword." kw)))
+  (let [simple-app (atom nil)
+        default-f  (constantly nil)]
+    (proxy [BaseAppState] []
+      (initialize [app]
+        (reset! simple-app (cast SimpleApplication app))
+        (binding [*app* app]
+          (let [result (init)]
+            (when (map? result)
+              (swap! states assoc-in [::app-states kw] result)))))
+      (update [tpf]
+        (apply-fn-in-app @simple-app kw (or update default-f) tpf))
+      (onEnable []
+        (apply-fn-in-app @simple-app kw (or on-enable default-f)))
+      (onDisable []
+        (apply-fn-in-app @simple-app kw (or on-disable default-f)))
+      (cleanup [app]
+        (apply-fn-in-app app kw (or cleanup default-f))))))
+
+
 (defn running? [^SimpleApplication app]
   (boolean (some-> app .getContext .isCreated)))
 
@@ -705,6 +739,29 @@
           (recur (running? *app*))))
       (.registerWithInput ^FlyByCamera (fly-cam) (input-manager))))
   app)
+
+
+(set! *warn-on-reflection* false)
+(defn- invoke-method [obj fn-name-string & args]
+  (let [m (first (filter (fn [x] (.. x getName (equals fn-name-string)))
+                         (.. obj getClass getDeclaredMethods)))]
+    (. m (setAccessible true))
+    (. m (invoke obj args))))
+(set! *warn-on-reflection* true)
+
+
+(defn clear
+  "Detaches all child nodes and removes all local lights from the root node."
+  [^SimpleApplication app]
+  (let [root-node     (.getRootNode app)
+        state-manager (.getStateManager app)]
+    (detach-all-child root-node)
+    (.clear (.getLocalLightList root-node))
+    (doseq [s (invoke-method state-manager "getStates")]
+      (when (and (instance? BaseAppState s)
+                 (str/starts-with? (str s) "jme_clj.core.proxy$com.jme3.app.state.BaseAppState"))
+        (.detach state-manager s)))
+    root-node))
 
 
 (defn stop
