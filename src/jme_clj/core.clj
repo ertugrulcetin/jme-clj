@@ -55,7 +55,7 @@
 
 
 (defn get-main-state
-  "Returns the global mutable state map for the whole application."
+  "Returns the mutable global state map for the whole application."
   []
   @states)
 
@@ -649,8 +649,8 @@
                  :init init
                  :update simple-update)
 
-   When init fn returns a hash map, this map registered to the global mutable state so it can be accessed from
-   update fn and other fns. Also, this applies for the update fn, it's content merged to the global mutable state.
+   When init fn returns a hash map, this map registered to the mutable global state so it can be accessed from
+   update fn and other fns. Also, this applies for the update fn, it's content merged to the mutable global state.
 
    For other settings options, please have a look `app-settings` fn.
 
@@ -697,8 +697,20 @@
 
 (defn app-state
   "AppState represents continuously executing code inside the main loop.
-   Please have a look AppState anad BaseAppState for more."
-  [kw & {:keys [init update cleanup on-enable on-disable]}]
+
+   e.g.:
+   (app-state ::my-app-state
+              :init (fn [] (println \"App State initialized.\"))
+              :update (fn [tpf] (println \"update:\" tpf))
+              :on-enable (fn [] (println \"on enable\"))
+              :on-disable (fn [] (println \"on disable\"))
+              :cleanup (fn [] (println \"cleaning\")))
+
+   If any functions returns a hash map, the hash map will be registered to the mutable global state under
+   app-states entry.
+
+   Please have a look AppState and BaseAppState for more."
+  [kw & {:keys [init update on-enable on-disable cleanup]}]
   (when-not (qualified-keyword? kw)
     (raise (format "%s is not qualified keyword." kw)))
   (let [simple-app (atom nil)
