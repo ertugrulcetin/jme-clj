@@ -875,7 +875,6 @@
    after re-defining app with `defsimpleapp` then call `start` again."
   [^SimpleApplication app]
   (clear app)
-  (swap! states assoc :stopped? true)
   (try
     (doto app (.stop true))
     (catch Throwable _
