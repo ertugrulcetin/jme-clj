@@ -65,11 +65,6 @@ have a look [/test/examples](https://github.com/ertugrulcetin/jme-clj/tree/maste
 
 [![jme-clj | Clojure 3D Game Development Demo](https://img.youtube.com/vi/IOPz9I49snM/0.jpg)](https://www.youtube.com/watch?v=IOPz9I49snM)
 
-## TODOs
-
-- [ ] AbstractAppState creation support
-- [ ] AbstractControl creation support
-
 ## License
 
 MIT License
