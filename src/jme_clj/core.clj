@@ -18,7 +18,7 @@
    (com.jme3.collision CollisionResults Collidable)
    (com.jme3.effect ParticleEmitter)
    (com.jme3.font BitmapText)
-   (com.jme3.input InputManager FlyByCamera)
+   (com.jme3.input InputManager RawInputListener)
    (com.jme3.input.controls
     ActionListener
     AnalogListener
@@ -37,7 +37,7 @@
    (com.jme3.renderer Camera)
    (com.jme3.scene Geometry Node Spatial Mesh)
    (com.jme3.scene.shape Box Sphere)
-   (com.jme3.system AppSettings)
+   (com.jme3.system AppSettings JmeContext)
    (com.jme3.terrain Terrain)
    (com.jme3.terrain.geomipmap TerrainQuad TerrainLodControl)
    (com.jme3.terrain.heightmap ImageBasedHeightMap HeightMap)
@@ -64,6 +64,10 @@
   "Returns value of :jme-clj.core/app key. It's used for keeping SimpleApplication's state."
   []
   (::app @states))
+
+
+(defn get-app-state [kw]
+  (get-in @states [::app-states kw]))
 
 
 (defn update-state
@@ -270,6 +274,10 @@
   (.loadFont (asset-manager) path))
 
 
+(defn load-asset [path]
+  (.loadAsset (asset-manager) ^String path))
+
+
 (defn bitmap-text [gui-font right-to-left]
   (BitmapText. gui-font right-to-left))
 
@@ -335,7 +343,7 @@
   node)
 
 
-(defn context []
+(defn ^JmeContext context []
   (.getContext *app*))
 
 
@@ -565,6 +573,45 @@
         (on-anim-change control channel name)))))
 
 
+(defn- wrap-with-bound [f]
+  (if f (bound-fn* f) (constantly nil)))
+
+
+(defn raw-input-listener [& {:keys [begin-input
+                                    end-input
+                                    on-joy-axis-event
+                                    on-joy-button-event
+                                    on-mouse-motion-event
+                                    on-mouse-button-event
+                                    on-key-event
+                                    on-touch-event]}]
+  (let [begin-input           (wrap-with-bound begin-input)
+        end-input             (wrap-with-bound end-input)
+        on-joy-axis-event     (wrap-with-bound on-joy-axis-event)
+        on-joy-button-event   (wrap-with-bound on-joy-button-event)
+        on-mouse-motion-event (wrap-with-bound on-mouse-motion-event)
+        on-mouse-button-event (wrap-with-bound on-mouse-button-event)
+        on-key-event          (wrap-with-bound on-key-event)
+        on-touch-event        (wrap-with-bound on-touch-event)]
+    (reify RawInputListener
+      (beginInput [this]
+        (begin-input))
+      (endInput [this]
+        (end-input))
+      (onJoyAxisEvent [this evt]
+        (on-joy-axis-event evt))
+      (onJoyButtonEvent [this evt]
+        (on-joy-button-event evt))
+      (onMouseMotionEvent [this evt]
+        (on-mouse-motion-event evt))
+      (onMouseButtonEvent [this evt]
+        (on-mouse-button-event evt))
+      (onKeyEvent [this evt]
+        (on-key-event evt))
+      (onTouchEvent [this evt]
+        (on-touch-event evt)))))
+
+
 ;;TODO check here, we might need to remove old ones
 ;;like in input listeners to avoid duplication
 ;;UPDATE: so far so good, no problem occurred, let's keep this comment for a while
@@ -745,15 +792,7 @@
    If you would like to re-start the app then use `unbind-app` instead of `stop`,
    after re-defining app with `defsimpleapp` then call `start` again."
   [^SimpleApplication app]
-  (.start app)
-  (when (:stopped? @states)
-    (binding [*app* app]
-      (loop [r? (running? *app*)]
-        (when-not r?
-          (Thread/sleep 10)
-          (recur (running? *app*))))
-      (.registerWithInput ^FlyByCamera (fly-cam) (input-manager))))
-  app)
+  (doto app .start))
 
 
 (set! *warn-on-reflection* false)
