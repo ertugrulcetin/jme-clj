@@ -42,7 +42,8 @@
    (com.jme3.terrain.geomipmap TerrainQuad TerrainLodControl)
    (com.jme3.terrain.heightmap ImageBasedHeightMap HeightMap)
    (com.jme3.texture Texture)
-   (com.jme3.util TangentBinormalGenerator)))
+   (com.jme3.util TangentBinormalGenerator)
+   (com.jme3.scene.control AbstractControl)))
 
 (set! *warn-on-reflection* true)
 
@@ -53,6 +54,9 @@
        :tag     SimpleApplication}
   *app* nil)
 
+(def ^{:dynamic true
+       :tag     AbstractControl}
+  *control* nil)
 
 (defn get-main-state
   "Returns the mutable global state map for the whole application."
@@ -66,8 +70,12 @@
   (::app @states))
 
 
-(defn get-app-state [kw]
-  (get-in @states [::app-states kw]))
+;;TODO add these 4 fns for all, get, update, set, remove
+(defn get-app-state
+  ([]
+   (::app-states @states))
+  ([kw]
+   (get-in @states [::app-states kw])))
 
 
 (defn update-state
@@ -507,10 +515,14 @@
    (throw (ex-info msg map cause))))
 
 
-(defn- kw->str [kw]
-  (if (qualified-keyword? kw)
-    (str (namespace kw) "/" (name kw))
+(defn- check-qualified-keyword [kw]
+  (when-not (qualified-keyword? kw)
     (raise (format "%s is not qualified keyword." kw))))
+
+
+(defn- kw->str [kw]
+  (check-qualified-keyword kw)
+  (str (namespace kw) "/" (name kw)))
 
 
 (defn- create-input-mapping [m]
@@ -735,11 +747,14 @@
      r#))
 
 
-(defn- apply-fn-in-app [app kw f & args]
+(defn- apply-fn-in-app [type app kw f & args]
   (binding [*app* app]
-    (let [result (apply f args)]
+    (let [result (apply f args)
+          type   (case type
+                   :app-state ::app-states
+                   :control ::controls)]
       (if (map? result)
-        (swap! states update-in [::app-states kw] merge result)))))
+        (swap! states update-in [type kw] merge result)))))
 
 
 (defn app-state
@@ -758,8 +773,7 @@
 
    Please have a look AppState and BaseAppState for more."
   [kw & {:keys [init update on-enable on-disable cleanup]}]
-  (when-not (qualified-keyword? kw)
-    (raise (format "%s is not qualified keyword." kw)))
+  (check-qualified-keyword kw)
   (let [simple-app (atom nil)
         default-f  (constantly nil)]
     (proxy [BaseAppState] []
@@ -770,13 +784,45 @@
             (when (map? result)
               (swap! states assoc-in [::app-states kw] result)))))
       (update [tpf]
-        (apply-fn-in-app @simple-app kw (or update default-f) tpf))
+        (apply-fn-in-app :app-state @simple-app kw (or update default-f) tpf))
       (onEnable []
-        (apply-fn-in-app @simple-app kw (or on-enable default-f)))
+        (apply-fn-in-app :app-state @simple-app kw (or on-enable default-f)))
       (onDisable []
-        (apply-fn-in-app @simple-app kw (or on-disable default-f)))
+        (apply-fn-in-app :app-state @simple-app kw (or on-disable default-f)))
       (cleanup [app]
-        (apply-fn-in-app app kw (or cleanup default-f))))))
+        (apply-fn-in-app :app-state app kw (or cleanup default-f))))))
+
+
+(defn control
+  "Controls are used to specify certain update and render logic for a Spatial.
+
+   If any function returns a hash map, the hash map will be registered to the mutable global state under
+   controls entry.
+
+   (control ::my-control
+            :update (fn [tpf] (println \"update\" tpf))
+            :render (fn [rm vp] (println \"render\" rm vp)))
+
+   Please have a look Control and AbstractControl for more."
+  [kw & {:keys [update render]}]
+  (check-qualified-keyword kw)
+  (let [update (wrap-with-bound update)
+        render (wrap-with-bound render)]
+    (proxy [AbstractControl] []
+      (controlUpdate [tpf]
+        (binding [*control* this]
+          (apply-fn-in-app :control *app* kw update tpf)))
+      (controlRender [rm vp]
+        (binding [*control* this]
+          (apply-fn-in-app :control *app* kw render rm vp))))))
+
+
+(defn get-spatial []
+  (.getSpatial *control*))
+
+
+(defn control-enabled? []
+  (.isEnabled *control*))
 
 
 (defn running? [^SimpleApplication app]
