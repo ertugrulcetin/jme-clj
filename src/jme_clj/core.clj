@@ -695,7 +695,10 @@
         (swap! states update-in [::app-states kw] merge result)))))
 
 
-(defn base-app-state [kw & {:keys [init update cleanup on-enable on-disable]}]
+(defn app-state
+  "AppState represents continuously executing code inside the main loop.
+   Please have a look AppState anad BaseAppState for more."
+  [kw & {:keys [init update cleanup on-enable on-disable]}]
   (when-not (qualified-keyword? kw)
     (raise (format "%s is not qualified keyword." kw)))
   (let [simple-app (atom nil)
@@ -761,6 +764,7 @@
       (when (and (instance? BaseAppState s)
                  (str/starts-with? (str s) "jme_clj.core.proxy$com.jme3.app.state.BaseAppState"))
         (.detach state-manager s)))
+    (reset! states {})
     root-node))
 
 
@@ -804,7 +808,6 @@
   [^Var v]
   (when (bound? v)
     (stop @v)
-    (reset! states {})
     (.unbindRoot v)))
 
 
