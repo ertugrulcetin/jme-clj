@@ -1,6 +1,6 @@
 ;; Please start your REPL with `+test` profile
 (ns examples.custom-control
-  "Clojure version of https://wiki.jmonkeyengine.org/docs/3.3/core/scene/control/custom_controls.html"
+  "Please have a look https://wiki.jmonkeyengine.org/docs/3.3/core/scene/control/custom_controls.html for more."
   (:require [jme-clj.core :refer :all]))
 
 
