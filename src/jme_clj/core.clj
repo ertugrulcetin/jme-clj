@@ -753,7 +753,7 @@
               :on-disable (fn [] (println \"on disable\"))
               :cleanup (fn [] (println \"cleaning\")))
 
-   If any functions returns a hash map, the hash map will be registered to the mutable global state under
+   If any function returns a hash map, the hash map will be registered to the mutable global state under
    app-states entry.
 
    Please have a look AppState and BaseAppState for more."
