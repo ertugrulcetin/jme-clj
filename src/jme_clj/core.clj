@@ -786,7 +786,7 @@
 (defn start
   "Starts the SimpleApplication instance.
 
-   It's not recommended to call `start` fn after calling `stop` fn. Should be used for development purposes only.
+   It's not recommended to call `start` fn after calling `stop` fn.
    Some odd behaviours might occur such as JVM crash (based on the app, apps use Bullet API [not always]).
 
    If you would like to re-start the app then use `unbind-app` instead of `stop`,
@@ -822,7 +822,7 @@
 (defn stop
   "Stops the SimpleApplication instance. Can be used when the user wants to exit from the game.
 
-   It's not recommended to call `start` fn after calling `stop` fn. Should be used for development purposes only.
+   It's not recommended to call `start` fn after calling `stop` fn.
    Some odd behaviours might occur such as JVM crash (based on the app, apps use Bullet API [not always]).
 
    If you would like to re-start the app then use `unbind-app` instead of `stop`,
