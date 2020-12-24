@@ -47,8 +47,12 @@
 
 (set! *warn-on-reflection* true)
 
-(defonce states (atom {}))
-(defonce instances (atom []))
+(defonce ^{:doc "The mutable global state of the application.
+                 It keeps app, app-state, control states and others."}
+         states (atom {}))
+
+(defonce ^{:doc "A list of SimpleApplication instances created with `defsimpleapp`."}
+         instances (atom []))
 
 (def ^{:dynamic true
        :tag     SimpleApplication}
@@ -60,7 +64,7 @@
 
 
 (defn get-main-state
-  "Returns the mutable global state map for the whole application."
+  "Returns the mutable global state map."
   []
   @states)
 
@@ -76,7 +80,6 @@
 
 
 (defn update-state
-  "Updates mutable state based on the type."
   [type ks f & args]
   (let [kw (case type
              :app ::app
@@ -88,7 +91,6 @@
 
 
 (defn set-state
-  "Sets a key-value pair inside mutable state based on the type."
   ([ks v]
    (set-state :app ks v))
   ([type ks v]
@@ -102,7 +104,6 @@
 
 
 (defn remove-state
-  "Removes a key inside mutable state based on the type."
   ([ks]
    (remove-state :app ks))
   ([type ks]
