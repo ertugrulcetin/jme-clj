@@ -853,8 +853,13 @@
    after re-defining app with `defsimpleapp` then call `start` again."
   ([^SimpleApplication app]
    (doto app .start))
-  ([^SimpleApplication app ^JmeContext$Type type]
-   (doto app (.start type))))
+  ([^SimpleApplication app type]
+   (let [type (case type
+                :canvas JmeContext$Type/Canvas
+                :display JmeContext$Type/Display
+                :headless JmeContext$Type/Headless
+                :offscreen-surface JmeContext$Type/OffscreenSurface)]
+     (doto app (.start ^JmeContext$Type type)))))
 
 
 (set! *warn-on-reflection* false)
