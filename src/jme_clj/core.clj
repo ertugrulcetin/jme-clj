@@ -89,25 +89,29 @@
 
 (defn set-state
   "Sets a key-value pair inside mutable state based on the type."
-  [type ks v]
-  (let [kw (case type
-             :app ::app
-             :app-state ::app-states
-             :control ::controls)
-        ks (if (vector? ks) ks [ks])
-        ks (into [kw] ks)]
-    (swap! states assoc-in ks v)))
+  ([ks v]
+   (set-state :app ks v))
+  ([type ks v]
+   (let [kw (case type
+              :app ::app
+              :app-state ::app-states
+              :control ::controls)
+         ks (if (vector? ks) ks [ks])
+         ks (into [kw] ks)]
+     (swap! states assoc-in ks v))))
 
 
 (defn remove-state
   "Removes a key inside mutable state based on the type."
-  [type ks]
-  (let [kw (case type
-             :app ::app
-             :app-state ::app-states
-             :control ::controls)
-        ks (if (vector? ks) ks [ks])]
-    (swap! states update kw k/dissoc-in ks)))
+  ([ks]
+   (remove-state :app ks))
+  ([type ks]
+   (let [kw (case type
+              :app ::app
+              :app-state ::app-states
+              :control ::controls)
+         ks (if (vector? ks) ks [ks])]
+     (swap! states update kw k/dissoc-in ks))))
 
 
 (defn app-settings

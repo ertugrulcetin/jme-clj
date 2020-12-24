@@ -17,7 +17,7 @@
        (if (= ::jump name*)
          (when pressed?
            (call* player :jump (vec3 0 20 0)))
-         (set-state :app (-> name* name keyword) pressed?))))))
+         (set-state (-> name* name keyword) pressed?))))))
 
 
 (defn- set-up-keys []
