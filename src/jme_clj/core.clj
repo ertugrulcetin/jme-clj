@@ -38,7 +38,7 @@
    (com.jme3.scene Geometry Node Spatial Mesh)
    (com.jme3.scene.control AbstractControl)
    (com.jme3.scene.shape Box Sphere)
-   (com.jme3.system AppSettings JmeContext)
+   (com.jme3.system AppSettings JmeContext JmeContext$Type)
    (com.jme3.terrain Terrain)
    (com.jme3.terrain.geomipmap TerrainQuad TerrainLodControl)
    (com.jme3.terrain.heightmap ImageBasedHeightMap HeightMap)
@@ -851,8 +851,10 @@
 
    If you would like to re-start the app then use `unbind-app` instead of `stop`,
    after re-defining app with `defsimpleapp` then call `start` again."
-  [^SimpleApplication app]
-  (doto app .start))
+  ([^SimpleApplication app]
+   (doto app .start))
+  ([^SimpleApplication app ^JmeContext$Type type]
+   (doto app (.start type))))
 
 
 (set! *warn-on-reflection* false)
