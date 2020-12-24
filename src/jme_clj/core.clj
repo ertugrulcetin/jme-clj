@@ -36,14 +36,14 @@
    (com.jme3.math Vector3f Ray ColorRGBA Vector2f)
    (com.jme3.renderer Camera)
    (com.jme3.scene Geometry Node Spatial Mesh)
+   (com.jme3.scene.control AbstractControl)
    (com.jme3.scene.shape Box Sphere)
    (com.jme3.system AppSettings JmeContext)
    (com.jme3.terrain Terrain)
    (com.jme3.terrain.geomipmap TerrainQuad TerrainLodControl)
    (com.jme3.terrain.heightmap ImageBasedHeightMap HeightMap)
    (com.jme3.texture Texture)
-   (com.jme3.util TangentBinormalGenerator)
-   (com.jme3.scene.control AbstractControl)))
+   (com.jme3.util TangentBinormalGenerator)))
 
 (set! *warn-on-reflection* true)
 
