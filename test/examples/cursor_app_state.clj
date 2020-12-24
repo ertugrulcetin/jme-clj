@@ -17,7 +17,7 @@
                               (let [app-settings (get* (context) :settings)
                                     x            (int (FastMath/clamp @x 0 (get* app-settings :width)))
                                     y            (int (FastMath/clamp @y 0 (get* app-settings :height)))
-                                    {:keys [cursor]} (get-app-state app-state-kw)]
+                                    {:keys [cursor]} (app-state-kw (get-state :app-state))]
                                 ;; we couldn't use `setc` or `set*` due to `setxHotSpot` convention. `x` is lower-case.
                                 (doto cursor
                                   (.setxHotSpot x)
