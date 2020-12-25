@@ -42,6 +42,8 @@
 
   :resource-paths ["resources"]
 
+  :java-source-paths ["java"]
+
   :aot [jme-clj.core]
 
   :eastwood {:source-paths       ["src"]
