@@ -33,7 +33,7 @@
     PointLight
     SpotLight)
    (com.jme3.material Material)
-   (com.jme3.math Vector3f Ray ColorRGBA Vector2f)
+   (com.jme3.math Vector3f Ray ColorRGBA Vector2f Quaternion)
    (com.jme3.renderer Camera)
    (com.jme3.scene Geometry Node Spatial Mesh)
    (com.jme3.scene.control AbstractControl)
@@ -214,6 +214,13 @@
    (if (= normalize :normalize)
      (.normalize (Vector2f. x y))
      (Vector2f. x y))))
+
+
+(defn quat
+  ([]
+   (Quaternion.))
+  ([^Float x ^Float y ^Float z]
+   (Quaternion. x y z)))
 
 
 (defn detach-all-child [^Node node]
