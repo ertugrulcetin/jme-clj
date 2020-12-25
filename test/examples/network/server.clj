@@ -10,8 +10,7 @@
                      :host-port 5110
                      :remote-udp-port 5110)
       (add-message-listener (fn [source msg]
-                              (when (instance? JmeMessage msg)
-                                (println "Server received:" (get-message msg)))))
+                              (println "Server received:" (get-message msg))))
       (start-server)
       (#(hash-map :server %))))
 

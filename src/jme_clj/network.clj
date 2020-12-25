@@ -63,7 +63,8 @@
 
 
 (defn get-message [msg]
-  (edn/read-string (.getMessage ^JmeMessage (cast JmeMessage msg))))
+  (when (instance? JmeMessage msg)
+    (edn/read-string (.getMessage ^JmeMessage msg))))
 
 
 (defn send-message [^Client c data]
