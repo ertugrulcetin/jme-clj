@@ -18,11 +18,12 @@
       (#(hash-map :client %))))
 
 
-(defsimpleapp app :opts {:show-settings?       false
-                         :pause-on-lost-focus? false
-                         :settings             {:title          "My JME Game"
-                                                :load-defaults? true
-                                                :frame-rate     60}}
+(defsimpleapp app
+              :opts {:show-settings?       false
+                     :pause-on-lost-focus? false
+                     :settings             {:title          "My JME Game"
+                                            :load-defaults? true
+                                            :frame-rate     60}}
               :init init)
 
 (comment
