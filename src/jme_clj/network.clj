@@ -72,6 +72,15 @@
   data)
 
 
+(defn broadcast
+  ([^Server s msg]
+   (.broadcast s msg))
+  ([^Server s filter msg]
+   (.broadcast s filter msg))
+  ([^Server s channel filter msg]
+   (.broadcast s channel filter msg)))
+
+
 (defn get-id [^Client c]
   (.getId c))
 

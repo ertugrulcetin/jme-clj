@@ -11,7 +11,7 @@
                      :host-port 5110
                      :remote-udp-port 5110)
       (add-message-listener (fn [source msg]
-                              (println "Client received:" (get-message msg))))
+                              (some->> msg get-message (println "Client received:"))))
       (add-client-state-listener (fn [client]
                                    (send-message client {:text "Hello!"}))
                                  (fn [client info]))
