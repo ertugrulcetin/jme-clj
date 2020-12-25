@@ -1,7 +1,6 @@
 (ns examples.network.client
   (:require [jme-clj.core :refer :all]
-            [jme-clj.network :refer :all])
-  (:import (org.jme.network JmeMessage)))
+            [jme-clj.network :refer :all]))
 
 
 (defn init []
