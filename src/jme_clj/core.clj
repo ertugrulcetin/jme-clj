@@ -279,8 +279,11 @@
   (BulletAppState.))
 
 
-(defn capsule-collision-shape [radius height axi]
-  (CapsuleCollisionShape. radius height axi))
+(defn capsule-collision-shape
+  ([radius height]
+   (CapsuleCollisionShape. radius height))
+  ([radius height axi]
+   (CapsuleCollisionShape. radius height axi)))
 
 
 (defn add-control [^Spatial spatial control]
