@@ -1,6 +1,7 @@
 ;; Please start your REPL with `+test` profile
 (ns examples.simple-multiplayer.client
   (:require
+   [examples.simple-multiplayer.player-app-state :as app-states.player]
    [jme-clj.core :refer :all]
    [jme-clj.network :refer :all]
    [clojure.set :as set])
@@ -9,53 +10,6 @@
    (com.jme3.math Vector3f ColorRGBA)
    (com.jme3.texture Texture$WrapMode)
    (com.jme3.bullet.control BetterCharacterControl)))
-
-
-(defn- init-as [bullet-as]
-  (let [player         (load-model "Models/Oto/OtoOldAnim.j3o")
-        player-control (character-control (capsule-collision-shape 3.0 4.0) 0.01)]
-    (setc player-control
-          :gravity (vec3 0 -30 0)
-          :physics-location (vec3 0 100 0))
-    (add-control player player-control)
-    (-> bullet-as
-        (get* :physics-space)
-        (call* :add player-control))
-    (add-to-root player)
-    {:player         player
-     :player-control player-control
-     :walk-direction (vec3)
-     :left           false
-     :right          false
-     :up             false
-     :down           false}))
-
-
-(defn update-as [tpf]
-  (let [cam-dir        (get* (cam) :direction)
-        cam-left       (get* (cam) :left)
-        states         (-> :app-state get-state ::player)
-        walk-direction (setv (:walk-direction states) 0 0 0)
-        direction      (cond
-                         (:up states) cam-dir
-                         (:down states) (negate cam-dir)
-                         (:left states) cam-left
-                         (:right states) (negate cam-left))
-        walk-direction (or (some->> direction (add-loc walk-direction))
-                           walk-direction)
-        player-control (:player-control states)]
-    (.setY walk-direction 0)
-    (set* player-control :walk-direction (mult-loc walk-direction 1))
-    (set-state [:player-data :location] (get* player-control :physics-location))
-    (set-state [:player-data :rotation] (get* (:player states) :local-rotation))
-    (set-state [:player-data :walk-direction] walk-direction)
-    nil))
-
-
-(defn- create-player-as [bullet-as]
-  (app-state ::player
-             :init #(init-as bullet-as)
-             :update update-as))
 
 
 (defn- init-materials []
@@ -99,7 +53,7 @@
 (defn- on-action-listener []
   (action-listener
    (fn [name* pressed? tpf]
-     (set-state :app-state [::player (-> name* name keyword)] pressed?))))
+     (set-state :app-state [::app-states.player/player (-> name* name keyword)] pressed?))))
 
 
 (defn- init-keys []
@@ -112,6 +66,46 @@
     :listeners {(on-action-listener) [::left ::right ::up ::down]}}))
 
 
+(defn- remove-players [players-to-remove players bullet-as]
+  (doseq [id players-to-remove]
+    (enqueue
+     (fn []
+       (remove-state [:players id])
+       (when-let [spatial (-> players (get id) :spatial)]
+         (remove-from-root spatial)
+         (-> bullet-as (get* :physics-space) (call* :remove spatial)))))))
+
+
+(defn- update-players [players-to-update all-players]
+  (doseq [id players-to-update]
+    (let [player   (-> (get-state) :players (get id))
+          spatial  (:spatial player)
+          new-data (get all-players id)]
+      (update-state :app [:players id] merge new-data)
+      (enqueue*
+       (-> spatial
+           (get* :control BetterCharacterControl)
+           (call* :warp (vec->vec3 (:location new-data))))
+       (set* spatial :local-rotation (vec->quat (:rotation new-data)))))))
+
+
+(defn- add-players [players-to-add all-players bullet-as]
+  (doseq [id players-to-add]
+    (let [data    (get all-players id)
+          control (better-character-control 1.5 9 80)
+          spatial (-> (load-model "Models/Oto/OtoOldAnim.j3o")
+                      (setc :local-translation (vec->vec3 (:location data))
+                            :local-rotation (vec->quat (:rotation data)))
+                      (add-control control))]
+      (-> control
+          (set* :gravity (vec3 0 40 0))
+          (call* :warp (vec->vec3 (:location data))))
+      (set-state [:players id] (assoc data :spatial spatial))
+      (enqueue*
+       (add-to-root spatial)
+       (-> bullet-as (get* :physics-space) (call* :add-all spatial))))))
+
+
 (defn- process-players [all-players]
   (let [{:keys [player-data players bullet-as]} (get-state)
         player-id         (:id player-data)
@@ -120,37 +114,9 @@
         players-to-remove (set/difference players-ids all-players-ids)
         players-to-update (set/difference (set/intersection players-ids all-players-ids) (hash-set player-id))
         players-to-add    (set/difference all-players-ids players-ids)]
-    (doseq [id players-to-remove]
-      (enqueue
-       (fn []
-         (remove-state [:players id])
-         (when-let [spatial (-> players (get id) :spatial)]
-           (remove-from-root spatial)
-           (-> bullet-as (get* :physics-space) (call* :remove spatial))))))
-    (doseq [id players-to-update]
-      (let [player   (-> (get-state) :players (get id))
-            spatial  (:spatial player)
-            new-data (get all-players id)]
-        (update-state :app [:players id] merge new-data)
-        (enqueue*
-         (-> spatial
-             (get* :control BetterCharacterControl)
-             (call* :warp (vec->vec3 (:location new-data))))
-         (set* spatial :local-rotation (vec->quat (:rotation new-data))))))
-    (doseq [id players-to-add]
-      (let [data    (get all-players id)
-            control (better-character-control 1.5 9 80)
-            spatial (-> (load-model "Models/Oto/OtoOldAnim.j3o")
-                        (setc :local-translation (vec->vec3 (:location data))
-                              :local-rotation (vec->quat (:rotation data)))
-                        (add-control control))]
-        (-> control
-            (set* :gravity (vec3 0 40 0))
-            (call* :warp (vec->vec3 (:location data))))
-        (set-state [:players id] (assoc data :spatial spatial))
-        (enqueue*
-         (add-to-root spatial)
-         (-> bullet-as (get* :physics-space) (call* :add-all spatial)))))))
+    (remove-players players-to-remove players bullet-as)
+    (update-players players-to-update all-players)
+    (add-players players-to-add all-players bullet-as)))
 
 
 (defn- init-client []
@@ -188,7 +154,7 @@
     (scale-texture-coords floor (vec2 3 6))
     (init-floor bullet-as floor (:floor-mat (init-materials)))
     (add-lights)
-    (attach (create-player-as bullet-as))
+    (attach (app-states.player/create-player-as bullet-as))
     (init-keys)
     (merge
      (init-client)
