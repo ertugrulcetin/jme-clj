@@ -742,6 +742,7 @@
 
    When init fn returns a hash map, this map registered to the mutable global state so it can be accessed from
    update fn and other fns. Also, this applies for the update fn, it's content merged to the mutable global state.
+
    There is also `:destroy` callback, so you might want to release some resources when the app is shutting down.
 
    For other settings options, please have a look `app-settings` fn.
