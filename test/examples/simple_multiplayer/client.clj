@@ -94,7 +94,7 @@
 
 ;; for keeping internal *bindings* work, also the app. We need to define
 ;; listeners with `defn`. `def` should NOT be used!
-(defn on-action-listener []
+(defn- on-action-listener []
   (action-listener
    (fn [name* pressed? tpf]
      (set-state :app-state [::player (-> name* name keyword)] pressed?))))
@@ -117,9 +117,15 @@
                      :host-port 5110
                      :remote-udp-port 5110)
       (add-message-listener (fn [source msg]
-                              (some->> msg get-message (println "Client received:"))))
+                              (when-let [msg (get-message msg)]
+                                (case (:type msg)
+                                  :text (println "Server message:" (:data msg))
+                                  :players (do)
+                                  :close-conn (when (= (.getId source) (:data msg))
+                                                (-> (get-state) :client close-client))))))
       (add-client-state-listener (fn [client]
-                                   (set-state :id (.getId client))
+                                   (println "ID:" (.getId client))
+                                   (set-state [:player-data :id] (.getId client))
                                    (send-message client {:type :text
                                                          :data "Hello!"}))
                                  (fn [client info]))
@@ -127,7 +133,7 @@
       (#(hash-map :client %))))
 
 
-(defn init []
+(defn- init []
   (let [bullet-as (bullet-app-state)
         floor     (box 50 0.1 50)]
     (setc (fly-cam)
@@ -147,7 +153,7 @@
       :bullet-as   bullet-as})))
 
 
-(defn simple-update [tpf]
+(defn- simple-update [tpf]
   (let [{:keys [client player-data]} (get-state)]
     (when (connected? client)
       (send-message client {:type :player-data
@@ -159,6 +165,13 @@
                                       (update :rotation quat->vec))}))))
 
 
+(defn- destroy []
+  (let [{:keys [bullet-as client player-data]} (get-state)]
+    (call* bullet-as :cleanup)
+    (send-message client {:type :close-conn
+                          :data {:id (:id player-data)}})))
+
+
 (defsimpleapp app
               :opts {:show-settings?       false
                      :pause-on-lost-focus? false
@@ -166,7 +179,8 @@
                                             :load-defaults? true
                                             :frame-rate     60}}
               :init init
-              :update simple-update)
+              :update simple-update
+              :destroy destroy)
 
 
 (comment

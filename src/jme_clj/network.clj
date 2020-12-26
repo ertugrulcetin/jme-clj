@@ -58,8 +58,16 @@
   (doto c .start))
 
 
+(defn close-client [^Client c]
+  (doto c .close))
+
+
 (defn start-server [^Server s]
   (doto s .start))
+
+
+(defn close-server [^Server s]
+  (doto s .close))
 
 
 (defn get-message [msg]

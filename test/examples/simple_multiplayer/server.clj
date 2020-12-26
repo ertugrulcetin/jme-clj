@@ -5,7 +5,7 @@
   (:import (com.jme3.network Filters)))
 
 
-(defn init []
+(defn- init []
   (-> (create-server :game-name "network game"
                      :version 1
                      :host-port 5110
@@ -22,9 +22,20 @@
                                                                :data (format "Client id %s joined."
                                                                              (.getId source))})))
                                   :player-data (set-state [:players (:id (:data msg))] (:data msg))
-                                  :close-conn (do)))))
+                                  :close-conn (let [player-id (-> msg :data :id)]
+                                                (println "Player removed:" player-id)
+                                                (remove-state [:players player-id])
+                                                (broadcast server
+                                                           (message {:type :close-conn
+                                                                     :data player-id})))))))
       (start-server)
       (#(hash-map :server %))))
+
+
+(defn- simple-update [tpf]
+  (let [{:keys [server players]} (get-state)]
+    (broadcast server (message {:type :players
+                                :data players}))))
 
 
 (defsimpleapp app
@@ -33,7 +44,8 @@
                      :settings             {:title          "My JME Game"
                                             :load-defaults? true
                                             :frame-rate     60}}
-              :init init)
+              :init init
+              :update simple-update)
 
 (comment
  ;; first, we need to register serializers
