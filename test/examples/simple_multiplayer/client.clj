@@ -108,12 +108,12 @@
 
 (defn- process-players [all-players]
   (let [{:keys [player-data players bullet-as]} (get-state)
-        player-id         (:id player-data)
+        player-id         (hash-set (:id player-data))
         players-ids       (set (keys players))
         all-players-ids   (set (keys all-players))
         players-to-remove (set/difference players-ids all-players-ids)
-        players-to-update (set/difference (set/intersection players-ids all-players-ids) (hash-set player-id))
-        players-to-add    (set/difference all-players-ids players-ids)]
+        players-to-update (set/difference (set/intersection players-ids all-players-ids) player-id)
+        players-to-add    (set/difference all-players-ids players-ids player-id)]
     (remove-players players-to-remove players bullet-as)
     (update-players players-to-update all-players)
     (add-players players-to-add all-players bullet-as)))
