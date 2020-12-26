@@ -923,8 +923,7 @@
       (when (and (instance? BaseAppState s)
                  (str/starts-with? (str s) "jme_clj.core.proxy$com.jme3.app.state.BaseAppState"))
         (.detach state-manager s)))
-    (reset! states {})
-    root-node))
+    (reset! states {})))
 
 
 (defn stop
@@ -937,10 +936,11 @@
    after re-defining app with `defsimpleapp` then call `start` again."
   [^SimpleApplication app]
   (try
-    (doto app (.stop true))
-    (clear app)
-    (catch Throwable _
-      (println "Error occurred on stop."))))
+    (.stop app true)
+    (catch Throwable t
+      (println "Error occurred on stop." (.getMessage t)))
+    (finally
+      (clear app))))
 
 
 (defn re-init
