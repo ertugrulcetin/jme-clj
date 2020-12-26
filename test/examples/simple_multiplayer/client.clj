@@ -2,7 +2,8 @@
 (ns examples.simple-multiplayer.client
   (:require
    [jme-clj.core :refer :all]
-   [jme-clj.network :refer :all])
+   [jme-clj.network :refer :all]
+   [clojure.set :as set])
   (:import
    (com.jme3.input KeyInput)
    (com.jme3.math Vector3f ColorRGBA)
@@ -110,6 +111,22 @@
     :listeners {(on-action-listener) [::left ::right ::up ::down]}}))
 
 
+(defn- process-players [all-players]
+  (let [{:keys [player-data players bullet-as]} (get-state)
+        player-id         (:id player-data)
+        players-ids       (set (vals players))
+        all-players-ids   (set (vals all-players))
+        players-to-remove (set/difference players-ids all-players-ids)
+        players-to-update (set/difference (set/intersection players-ids all-players-ids) (set player-id))
+        players-to-add    (set/difference all-players-ids players-ids)]
+    (doseq [id players-to-remove]
+      (enqueue
+       (fn []
+         (remove-state [:players id])
+         (remove-from-root (-> players (get id) :spatial))
+         (-> bullet-as (get* :physics-space) (call* :remove (-> players (get id) :spatial))))))))
+
+
 (defn- init-client []
   (-> (create-client :game-name "network game"
                      :version 1
@@ -120,12 +137,12 @@
                               (when-let [msg (get-message msg)]
                                 (case (:type msg)
                                   :text (println "Server message:" (:data msg))
-                                  :players (do)
-                                  :close-conn (when (= (.getId source) (:data msg))
+                                  :players (process-players (:data msg))
+                                  :close-conn (when (= (get-id source) (:data msg))
                                                 (-> (get-state) :client close-client))))))
       (add-client-state-listener (fn [client]
-                                   (println "ID:" (.getId client))
-                                   (set-state [:player-data :id] (.getId client))
+                                   (println "ID:" (get-id client))
+                                   (set-state [:player-data :id] (get-id client))
                                    (send-message client {:type :text
                                                          :data "Hello!"}))
                                  (fn [client info]))

@@ -965,10 +965,21 @@
   (reset! instances []))
 
 
+(defn enqueue [f]
+  (let [^Runnable f (bound-fn* f)]
+    (.enqueue *app* f)))
+
+
+(defmacro enqueue*
+  "Macro version of `enqueue`. `fn` wrapping not needed."
+  [& body]
+  `(let [^Runnable f# (bound-fn* (fn [] ~@body))]
+     (.enqueue *app* f#)))
+
+
 (defmacro run
   "Every code that changes the state should be wrapped with `run` macro.
    Otherwise `Make sure you do not modify the scene from another thread!` exception will be thrown."
   [app & body]
   `(binding [*app* ~app]
-     (let [^Runnable f# (bound-fn* (fn [] ~@body))]
-       (.enqueue *app* f#))))
+     (enqueue* ~@body)))
