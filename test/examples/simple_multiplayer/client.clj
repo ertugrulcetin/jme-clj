@@ -174,7 +174,6 @@
                                       (update :rotation quat->vec))}))))
 
 
-;;TODO since state is removed, we get NP inside call*
 (defn- destroy []
   (let [{:keys [bullet-as client player-data]} (get-state)]
     (call* bullet-as :cleanup)
