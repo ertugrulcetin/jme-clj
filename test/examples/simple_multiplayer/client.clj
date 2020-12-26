@@ -79,8 +79,7 @@
   {:location       (vec3)
    :rotation       (quat)
    :walk-direction (vec3)
-   :id             0
-   :name           nil})
+   :id             0})
 
 
 (defn- add-lights []
@@ -111,6 +110,23 @@
     :listeners {(on-action-listener) [::left ::right ::up ::down]}}))
 
 
+(defn- init-client []
+  (-> (create-client :game-name "network game"
+                     :version 1
+                     :host "localhost"
+                     :host-port 5110
+                     :remote-udp-port 5110)
+      (add-message-listener (fn [source msg]
+                              (some->> msg get-message (println "Client received:"))))
+      (add-client-state-listener (fn [client]
+                                   (set-state :id (.getId client))
+                                   (send-message client {:type :text
+                                                         :data "Hello!"}))
+                                 (fn [client info]))
+      (start-client)
+      (#(hash-map :client %))))
+
+
 (defn init []
   (let [bullet-as (bullet-app-state)
         floor     (box 50 0.1 50)]
@@ -125,8 +141,22 @@
     (add-lights)
     (attach (create-player-as bullet-as))
     (init-keys)
-    {:player-data (create-player-data)
-     :bullet-as   bullet-as}))
+    (merge
+     (init-client)
+     {:player-data (create-player-data)
+      :bullet-as   bullet-as})))
+
+
+(defn simple-update [tpf]
+  (let [{:keys [client player-data]} (get-state)]
+    (when (connected? client)
+      (send-message client {:type :player-data
+                            ;; we need to convert instances, Serialization only works with pure Clojure
+                            ;; data structures.
+                            :data (-> player-data
+                                      (update :location vec3->vec)
+                                      (update :walk-direction vec3->vec)
+                                      (update :rotation quat->vec))}))))
 
 
 (defsimpleapp app
@@ -135,11 +165,16 @@
                      :settings             {:title          "My JME Game"
                                             :load-defaults? true
                                             :frame-rate     60}}
-              :init init)
+              :init init
+              :update simple-update)
 
 
 (comment
- (start app)
+ ;; first, we need to register serializers
+ (init-default-serializers)
+
+ ;; then we can call the start app
+ (start app :display)
 
  (run app
       (re-init init))

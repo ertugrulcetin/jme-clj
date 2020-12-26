@@ -223,6 +223,14 @@
    (Quaternion. x y z)))
 
 
+(defn vec3->vec [^Vector3f v]
+  [(.-x v) (.-y v) (.-z v)])
+
+
+(defn quat->vec [^Quaternion q]
+  [(.getX q) (.getY q) (.getZ q) (.getW q)])
+
+
 (defn detach-all-child [^Node node]
   (doto node .detachAllChildren))
 
