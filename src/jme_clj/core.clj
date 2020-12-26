@@ -742,6 +742,7 @@
 
    When init fn returns a hash map, this map registered to the mutable global state so it can be accessed from
    update fn and other fns. Also, this applies for the update fn, it's content merged to the mutable global state.
+   There is also `:destroy` callback, so you might want to release some resources when the app is shutting down.
 
    For other settings options, please have a look `app-settings` fn.
 
@@ -752,7 +753,7 @@
    an option could be using `unbind-app` for unbinding current app (var), and re-defining app with `defsimpleapp`.
 
    Please have a look at com.jme3.app.SimpleApplication for more."
-  [name & {:keys [opts init update]}]
+  [name & {:keys [opts init update] :as m}]
   `(when-let [r# (defonce ~name
                           (let [app# (proxy [SimpleApplication] []
                                        (simpleInitApp []
@@ -767,7 +768,11 @@
                                              (let [update-result# ((or ~update
                                                                        (constantly nil)) tpf#)]
                                                (when (map? update-result#)
-                                                 (swap! states clojure.core/update ::app merge update-result#)))))))]
+                                                 (swap! states clojure.core/update ::app merge update-result#))))))
+                                       (destroy []
+                                         (when-let [destroy# (:destroy ~m)]
+                                           (destroy#)
+                                           (proxy-super destroy))))]
                             (when (seq ~opts)
                               (some->> ~opts :show-settings? (.setShowSettings app#))
                               (some->> ~opts :pause-on-lost-focus? (.setPauseOnLostFocus app#))
