@@ -23,7 +23,7 @@
 
 
 (defn message
-  "`data` parameter can only be pure a Clojure data structure."
+  "`data` parameter can only be a pure Clojure data structure."
   [data]
   (JmeMessage. (pr-str data)))
 
