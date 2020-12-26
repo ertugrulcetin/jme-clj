@@ -7,7 +7,8 @@
   (:import
    (com.jme3.input KeyInput)
    (com.jme3.math Vector3f ColorRGBA)
-   (com.jme3.texture Texture$WrapMode)))
+   (com.jme3.texture Texture$WrapMode)
+   (com.jme3.bullet.control BetterCharacterControl)))
 
 
 (defn- init-as [bullet-as]
@@ -114,17 +115,42 @@
 (defn- process-players [all-players]
   (let [{:keys [player-data players bullet-as]} (get-state)
         player-id         (:id player-data)
-        players-ids       (set (vals players))
-        all-players-ids   (set (vals all-players))
+        players-ids       (set (keys players))
+        all-players-ids   (set (keys all-players))
         players-to-remove (set/difference players-ids all-players-ids)
-        players-to-update (set/difference (set/intersection players-ids all-players-ids) (set player-id))
+        players-to-update (set/difference (set/intersection players-ids all-players-ids) (hash-set player-id))
         players-to-add    (set/difference all-players-ids players-ids)]
     (doseq [id players-to-remove]
       (enqueue
        (fn []
          (remove-state [:players id])
-         (remove-from-root (-> players (get id) :spatial))
-         (-> bullet-as (get* :physics-space) (call* :remove (-> players (get id) :spatial))))))))
+         (when-let [spatial (-> players (get id) :spatial)]
+           (remove-from-root spatial)
+           (-> bullet-as (get* :physics-space) (call* :remove spatial))))))
+    (doseq [id players-to-update]
+      (let [player   (-> (get-state) :players (get id))
+            spatial  (:spatial player)
+            new-data (get all-players id)]
+        (update-state :app [:players id] merge new-data)
+        (enqueue*
+         (-> spatial
+             (get* :control BetterCharacterControl)
+             (call* :warp (vec->vec3 (:location new-data))))
+         (set* spatial :local-rotation (vec->quat (:rotation new-data))))))
+    (doseq [id players-to-add]
+      (let [data    (get all-players id)
+            control (better-character-control 1.5 9 80)
+            spatial (-> (load-model "Models/Oto/OtoOldAnim.j3o")
+                        (setc :local-translation (vec->vec3 (:location data))
+                              :local-rotation (vec->quat (:rotation data)))
+                        (add-control control))]
+        (-> control
+            (set* :gravity (vec3 0 40 0))
+            (call* :warp (vec->vec3 (:location data))))
+        (set-state [:players id] (assoc data :spatial spatial))
+        (enqueue*
+         (add-to-root spatial)
+         (-> bullet-as (get* :physics-space) (call* :add-all spatial)))))))
 
 
 (defn- init-client []
@@ -182,6 +208,7 @@
                                       (update :rotation quat->vec))}))))
 
 
+;;TODO since state is removed, we get NP inside call*
 (defn- destroy []
   (let [{:keys [bullet-as client player-data]} (get-state)]
     (call* bullet-as :cleanup)

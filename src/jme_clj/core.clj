@@ -13,7 +13,7 @@
    (com.jme3.audio AudioNode AudioData$DataType)
    (com.jme3.bullet BulletAppState)
    (com.jme3.bullet.collision.shapes CapsuleCollisionShape)
-   (com.jme3.bullet.control RigidBodyControl CharacterControl)
+   (com.jme3.bullet.control RigidBodyControl CharacterControl BetterCharacterControl)
    (com.jme3.bullet.util CollisionShapeFactory)
    (com.jme3.collision CollisionResults Collidable)
    (com.jme3.effect ParticleEmitter)
@@ -197,6 +197,8 @@
 (defn vec3
   ([]
    (Vector3f.))
+  ([v]
+   (Vector3f. v))
   ([x y z]
    (vec3 x y z false))
   ([x y z normalize]
@@ -208,6 +210,8 @@
 (defn vec2
   ([]
    (Vector2f.))
+  ([v]
+   (Vector2f. v))
   ([x y]
    (vec2 x y false))
   ([x y normalize]
@@ -220,16 +224,25 @@
   ([]
    (Quaternion.))
   ([^Float x ^Float y ^Float z]
-   (Quaternion. x y z)))
+   (Quaternion. x y z))
+  ([^Float x ^Float y ^Float z ^Float w]
+   (Quaternion. x y z w)))
 
 
 (defn vec3->vec [^Vector3f v]
   [(.-x v) (.-y v) (.-z v)])
 
 
+(defn vec->vec3 [v]
+  (apply vec3 v))
+
+
 (defn quat->vec [^Quaternion q]
   [(.getX q) (.getY q) (.getZ q) (.getW q)])
 
+
+(defn vec->quat [v]
+  (apply quat v))
 
 (defn detach-all-child [^Node node]
   (doto node .detachAllChildren))
@@ -300,6 +313,10 @@
 
 (defn character-control [shape step-height]
   (CharacterControl. shape step-height))
+
+
+(defn better-character-control [radius height mass]
+  (BetterCharacterControl. radius height mass))
 
 
 (defn load-model [path]
