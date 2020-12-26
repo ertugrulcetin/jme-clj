@@ -23,7 +23,7 @@
 
 
 (defn message
-  "`data` parameter can only be pure Clojure data structures."
+  "`data` parameter can only be a pure Clojure data structure."
   [data]
   (JmeMessage. (pr-str data)))
 
@@ -37,29 +37,40 @@
 
 
 (defn add-message-listener [obj on-message-received]
-  (if (instance? Client obj)
-    (doto ^Client obj (.addMessageListener (reify MessageListener
-                                             (messageReceived [_ source msg]
-                                               (on-message-received source msg)))))
-    (doto ^Server obj (.addMessageListener (reify MessageListener
-                                             (messageReceived [_ source msg]
-                                               (on-message-received source msg)))))))
+  (let [on-message-received (bound-fn* on-message-received)]
+    (if (instance? Client obj)
+      (doto ^Client obj (.addMessageListener (reify MessageListener
+                                               (messageReceived [_ source msg]
+                                                 (on-message-received source msg)))))
+      (doto ^Server obj (.addMessageListener (reify MessageListener
+                                               (messageReceived [_ source msg]
+                                                 (on-message-received source msg))))))))
 
 
 (defn add-client-state-listener [^Client client on-client-connected on-client-disconnected]
-  (doto client (.addClientStateListener (reify ClientStateListener
-                                          (clientConnected [_ client]
-                                            (on-client-connected client))
-                                          (clientDisconnected [_ client info]
-                                            (on-client-disconnected client info))))))
+  (let [on-client-connected    (bound-fn* on-client-connected)
+        on-client-disconnected (bound-fn* on-client-disconnected)]
+    (doto client (.addClientStateListener (reify ClientStateListener
+                                            (clientConnected [_ client]
+                                              (on-client-connected client))
+                                            (clientDisconnected [_ client info]
+                                              (on-client-disconnected client info)))))))
 
 
 (defn start-client [^Client c]
   (doto c .start))
 
 
+(defn close-client [^Client c]
+  (doto c .close))
+
+
 (defn start-server [^Server s]
   (doto s .start))
+
+
+(defn close-server [^Server s]
+  (doto s .close))
 
 
 (defn get-message [msg]

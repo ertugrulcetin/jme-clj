@@ -13,7 +13,7 @@
    (com.jme3.audio AudioNode AudioData$DataType)
    (com.jme3.bullet BulletAppState)
    (com.jme3.bullet.collision.shapes CapsuleCollisionShape)
-   (com.jme3.bullet.control RigidBodyControl CharacterControl)
+   (com.jme3.bullet.control RigidBodyControl CharacterControl BetterCharacterControl)
    (com.jme3.bullet.util CollisionShapeFactory)
    (com.jme3.collision CollisionResults Collidable)
    (com.jme3.effect ParticleEmitter)
@@ -33,7 +33,7 @@
     PointLight
     SpotLight)
    (com.jme3.material Material)
-   (com.jme3.math Vector3f Ray ColorRGBA Vector2f)
+   (com.jme3.math Vector3f Ray ColorRGBA Vector2f Quaternion)
    (com.jme3.renderer Camera)
    (com.jme3.scene Geometry Node Spatial Mesh)
    (com.jme3.scene.control AbstractControl)
@@ -197,6 +197,8 @@
 (defn vec3
   ([]
    (Vector3f.))
+  ([v]
+   (Vector3f. v))
   ([x y z]
    (vec3 x y z false))
   ([x y z normalize]
@@ -208,6 +210,8 @@
 (defn vec2
   ([]
    (Vector2f.))
+  ([v]
+   (Vector2f. v))
   ([x y]
    (vec2 x y false))
   ([x y normalize]
@@ -215,6 +219,30 @@
      (.normalize (Vector2f. x y))
      (Vector2f. x y))))
 
+
+(defn quat
+  ([]
+   (Quaternion.))
+  ([^Float x ^Float y ^Float z]
+   (Quaternion. x y z))
+  ([^Float x ^Float y ^Float z ^Float w]
+   (Quaternion. x y z w)))
+
+
+(defn vec3->vec [^Vector3f v]
+  [(.-x v) (.-y v) (.-z v)])
+
+
+(defn vec->vec3 [v]
+  (apply vec3 v))
+
+
+(defn quat->vec [^Quaternion q]
+  [(.getX q) (.getY q) (.getZ q) (.getW q)])
+
+
+(defn vec->quat [v]
+  (apply quat v))
 
 (defn detach-all-child [^Node node]
   (doto node .detachAllChildren))
@@ -272,8 +300,11 @@
   (BulletAppState.))
 
 
-(defn capsule-collision-shape [radius height axi]
-  (CapsuleCollisionShape. radius height axi))
+(defn capsule-collision-shape
+  ([radius height]
+   (CapsuleCollisionShape. radius height))
+  ([radius height axi]
+   (CapsuleCollisionShape. radius height axi)))
 
 
 (defn add-control [^Spatial spatial control]
@@ -282,6 +313,10 @@
 
 (defn character-control [shape step-height]
   (CharacterControl. shape step-height))
+
+
+(defn better-character-control [radius height mass]
+  (BetterCharacterControl. radius height mass))
 
 
 (defn load-model [path]
@@ -725,6 +760,8 @@
    When init fn returns a hash map, this map registered to the mutable global state so it can be accessed from
    update fn and other fns. Also, this applies for the update fn, it's content merged to the mutable global state.
 
+   There is also `:destroy` callback, so you might want to release some resources when the app is shutting down.
+
    For other settings options, please have a look `app-settings` fn.
 
    It's not recommended to create multiple defsimpleapp instances inside one JVM.
@@ -734,7 +771,7 @@
    an option could be using `unbind-app` for unbinding current app (var), and re-defining app with `defsimpleapp`.
 
    Please have a look at com.jme3.app.SimpleApplication for more."
-  [name & {:keys [opts init update]}]
+  [name & {:keys [opts init update] :as m}]
   `(when-let [r# (defonce ~name
                           (let [app# (proxy [SimpleApplication] []
                                        (simpleInitApp []
@@ -749,7 +786,11 @@
                                              (let [update-result# ((or ~update
                                                                        (constantly nil)) tpf#)]
                                                (when (map? update-result#)
-                                                 (swap! states clojure.core/update ::app merge update-result#)))))))]
+                                                 (swap! states clojure.core/update ::app merge update-result#))))))
+                                       (destroy []
+                                         (when-let [destroy# (:destroy ~m)]
+                                           (destroy#)
+                                           (proxy-super destroy))))]
                             (when (seq ~opts)
                               (some->> ~opts :show-settings? (.setShowSettings app#))
                               (some->> ~opts :pause-on-lost-focus? (.setPauseOnLostFocus app#))
@@ -882,8 +923,7 @@
       (when (and (instance? BaseAppState s)
                  (str/starts-with? (str s) "jme_clj.core.proxy$com.jme3.app.state.BaseAppState"))
         (.detach state-manager s)))
-    (reset! states {})
-    root-node))
+    (reset! states {})))
 
 
 (defn stop
@@ -895,11 +935,12 @@
    If you would like to re-start the app then use `unbind-app` instead of `stop`,
    after re-defining app with `defsimpleapp` then call `start` again."
   [^SimpleApplication app]
-  (clear app)
   (try
-    (doto app (.stop true))
-    (catch Throwable _
-      (println "Error occurred on stop."))))
+    (.stop app true)
+    (catch Throwable t
+      (println "Error occurred on stop." (.getMessage t)))
+    (finally
+      (clear app))))
 
 
 (defn re-init
@@ -941,10 +982,21 @@
   (reset! instances []))
 
 
+(defn enqueue [f]
+  (let [^Runnable f (bound-fn* f)]
+    (.enqueue *app* f)))
+
+
+(defmacro enqueue*
+  "Macro version of `enqueue`. `fn` wrapping not needed."
+  [& body]
+  `(let [^Runnable f# (bound-fn* (fn [] ~@body))]
+     (.enqueue *app* f#)))
+
+
 (defmacro run
   "Every code that changes the state should be wrapped with `run` macro.
    Otherwise `Make sure you do not modify the scene from another thread!` exception will be thrown."
   [app & body]
   `(binding [*app* ~app]
-     (let [^Runnable f# (bound-fn* (fn [] ~@body))]
-       (.enqueue *app* f#))))
+     (enqueue* ~@body)))
