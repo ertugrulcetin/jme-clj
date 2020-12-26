@@ -936,9 +936,9 @@
    If you would like to re-start the app then use `unbind-app` instead of `stop`,
    after re-defining app with `defsimpleapp` then call `start` again."
   [^SimpleApplication app]
-  (clear app)
   (try
     (doto app (.stop true))
+    (clear app)
     (catch Throwable _
       (println "Error occurred on stop."))))
 
