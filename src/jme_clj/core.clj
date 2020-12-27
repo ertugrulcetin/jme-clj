@@ -789,8 +789,8 @@
                                                  (swap! states clojure.core/update ::app merge update-result#))))))
                                        (destroy []
                                          (when-let [destroy# (:destroy ~m)]
-                                           (destroy#)
-                                           (proxy-super destroy))))]
+                                           (destroy#))
+                                         (proxy-super destroy)))]
                             (when (seq ~opts)
                               (some->> ~opts :show-settings? (.setShowSettings app#))
                               (some->> ~opts :pause-on-lost-focus? (.setPauseOnLostFocus app#))
