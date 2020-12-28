@@ -87,6 +87,7 @@
     {:bullet-app-state bas
      :player           player
      :spatial          spatial
+     :terrain          terrain
      :walk-direction   (vec3)
      :cam-dir          (vec3)
      :cam-left         (vec3)
@@ -94,6 +95,16 @@
      :down             false
      :left             false
      :right            false}))
+
+
+(defn- get-available-loc [player terrain]
+  (let [loc         (get* player :physics-location)
+        ^Float size (- (get* terrain :terrain-size) 2)
+        x           (Math/max ^Float (- size) (Math/min ^Float (.-x loc) size))
+        z           (Math/max ^Float (- size) (Math/min ^Float (.-z loc) size))]
+    (doto loc
+      (.setX x)
+      (.setZ z))))
 
 
 (defn- simple-update [tpf]
@@ -104,20 +115,23 @@
                 left
                 right
                 up
-                down]} (get-state)
+                down] :as m} (get-state)
         cam-dir        (-> cam-dir (setv (get* (cam) :direction)) (mult-loc 0.6))
         cam-left       (-> cam-left (setv (get* (cam) :left)) (mult-loc 0.4))
         walk-direction (setv walk-direction 0 0 0)
+        ;;TODO fix here...
         direction      (cond
                          left cam-left
                          right (negate cam-left)
                          up cam-dir
                          down (negate cam-dir))
         walk-direction (or (some->> direction (add-loc walk-direction))
-                           walk-direction)]
+                           walk-direction)
+        loc            (get-available-loc (:player m) (:terrain m))]
     ;;since we mutate objects internally, we don't need to return hash-map in here
     (set* player :walk-direction walk-direction)
-    (set* (cam) :location (get* player :physics-location))))
+    (set* player :physics-location loc)
+    (set* (cam) :location loc)))
 
 
 (defsimpleapp app
