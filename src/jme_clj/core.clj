@@ -41,9 +41,9 @@
    (com.jme3.system AppSettings JmeContext JmeContext$Type)
    (com.jme3.terrain Terrain)
    (com.jme3.terrain.geomipmap TerrainQuad TerrainLodControl)
-   (com.jme3.terrain.heightmap ImageBasedHeightMap HeightMap)
+   (com.jme3.terrain.heightmap ImageBasedHeightMap HeightMap HillHeightMap)
    (com.jme3.texture Texture)
-   (com.jme3.util TangentBinormalGenerator)))
+   (com.jme3.util TangentBinormalGenerator SkyFactory SkyFactory$EnvMapType)))
 
 (set! *warn-on-reflection* true)
 
@@ -371,6 +371,17 @@
   (CollisionShapeFactory/createMeshShape spatial))
 
 
+(defn create-sky
+  "Possible `type` options -> :cube, :sphere and :equirect"
+  [path type]
+  (SkyFactory/createSky (asset-manager)
+                        ^String path
+                        ^SkyFactory$EnvMapType (case type
+                                                 :cube SkyFactory$EnvMapType/CubeMap
+                                                 :sphere SkyFactory$EnvMapType/SphereMap
+                                                 :equirect SkyFactory$EnvMapType/EquirectMap)))
+
+
 (defn rigid-body-control
   ([^Float mass]
    (RigidBodyControl. mass))
@@ -379,11 +390,13 @@
 
 
 (defn attach [app-state]
-  (doto (state-manager) (.attach app-state)))
+  (.attach (state-manager) app-state)
+  app-state)
 
 
 (defn detach [app-state]
-  (doto (state-manager) (.detach app-state)))
+  (.detach (state-manager) app-state)
+  app-state)
 
 
 (defn attach-child [^Node node ^Spatial s]
@@ -461,6 +474,10 @@
 
 (defn get-hm [^HeightMap hm]
   (.getHeightMap hm))
+
+
+(defn hill-hm [size iterations min-radius max-radius seed]
+  (HillHeightMap. size iterations min-radius max-radius seed))
 
 
 (defn terrain-quad [name path-size total-size hm]
