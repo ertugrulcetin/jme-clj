@@ -80,7 +80,9 @@
                        "-Djava.net.preferIPv4Stack=true"
                        "-Dfile.encoding=UTF-8"]
 
-  :profiles {:dev  {:dependencies [[clj-kondo "2020.10.10"]]
+  :profiles {:dev  {:dependencies [[clj-kondo "2020.10.10"]
+                                   [org.clojure/tools.logging "1.1.0"]]
                     :repl-options {:init-ns jme-clj.core}}
-             :test {:dependencies   [[clj-kondo "2020.10.10"]]
+             :test {:dependencies   [[clj-kondo "2020.10.10"]
+                                     [org.clojure/tools.logging "1.1.0"]]
                     :resource-paths ["test/resources"]}})
