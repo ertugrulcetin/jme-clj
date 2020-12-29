@@ -1,26 +1,30 @@
 (ns examples.fps.controls
   (:require [jme-clj.core :refer :all])
-  (:import (com.jme3.input KeyInput)))
+  (:import (com.jme3.input KeyInput MouseInput)))
 
 
 (defn- on-action-listener []
   (action-listener
    (fn [name* pressed? tpf]
-     (let [{:keys [player]} (get-state)]
-       (if (= ::jump name*)
-         (when pressed?
-           (call* player :jump (vec3 0 20 0)))
-         (set-state :control [::user-input (-> name* name keyword)] pressed?))))))
+     (let [{:keys [player terrain audio]} (get-state)]
+       (cond
+         (= ::click name*) (when pressed?
+                             (when-let [m (create-ray-test terrain)]
+                               (play-ins audio)
+                               (clojure.pprint/pprint m)))
+         (= ::jump name*) (when pressed? (call* player :jump (vec3 0 20 0)))
+         :else (set-state :control [::user-input (-> name* name keyword)] pressed?))))))
 
 
 (defn- set-up-keys []
   (apply-input-mapping
-   {:triggers  {::left  (key-trigger KeyInput/KEY_A)
+   {:triggers  {::click (mouse-trigger MouseInput/BUTTON_LEFT)
+                ::left  (key-trigger KeyInput/KEY_A)
                 ::right (key-trigger KeyInput/KEY_D)
                 ::up    (key-trigger KeyInput/KEY_W)
                 ::down  (key-trigger KeyInput/KEY_S)
                 ::jump  (key-trigger KeyInput/KEY_SPACE)}
-    :listeners {(on-action-listener) [::left ::right ::up ::down ::jump]}}))
+    :listeners {(on-action-listener) [::click ::left ::right ::up ::down ::jump]}}))
 
 
 (defn- get-available-loc [player terrain]

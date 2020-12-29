@@ -56,6 +56,14 @@
     (add-light-to-root ambient)))
 
 
+(defn init-audio []
+  (-> (audio-node "Sound/Effects/Gun.wav" :buffer)
+      (setc :positional false
+            :looping false
+            :volume 2)
+      (add-to-root)))
+
+
 (defn init []
   (set* (fly-cam) :move-speed 100)
   (let [bas           (attach (bullet-app-state))
@@ -65,14 +73,14 @@
         landscape     (rigid-body-control terrain-shape 0)
         player        (create-player)
         spatial       (load-model "Models/Oto/Oto.mesh.xml")]
+    (add-lights)
+    (attach (app.states/create-cross-hairs))
     (add-to-root (create-sky "Textures/Sky/Bright/BrightSky.dds" :cube))
     (-> spatial
         (add-control player)
         (add-control (controls/create-user-input player terrain))
         (add-to-root)
         (cull-hint :always))
-    (add-lights)
-    (attach (app.states/create-cross-hairs))
     (-> terrain
         (add-control landscape)
         (add-to-root))
@@ -85,7 +93,8 @@
     {:bullet-app-state bas
      :player           player
      :spatial          spatial
-     :terrain          terrain}))
+     :terrain          terrain
+     :audio            (init-audio)}))
 
 
 (defn- simple-update [tpf]

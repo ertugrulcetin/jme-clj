@@ -271,8 +271,12 @@
   (.getGuiNode *app*))
 
 
-(defn audio-node [^String name ^AudioData$DataType type]
-  (AudioNode. (asset-manager) name type))
+(defn audio-node [^String name type]
+  "Possible `type` options -> :buffer and :stream"
+  (let [^AudioData$DataType type (case type
+                                   :buffer AudioData$DataType/Buffer
+                                   :stream AudioData$DataType/Stream)]
+    (AudioNode. (asset-manager) name type)))
 
 
 (defn play [^AudioNode an]
@@ -747,7 +751,7 @@
      (merge ~@(remove :_ (map #(hash-map (keyword %) %) (take-nth 2 bindings))))))
 
 
-(defn cam []
+(defn ^Camera cam []
   (.getCamera *app*))
 
 
@@ -770,13 +774,22 @@
   (Ray. origin direction))
 
 
-(defn collide-with [^Collidable o collidable results]
+(defn ^CollisionResults collide-with [^Collidable o collidable results]
   (.collideWith o collidable results)
   results)
 
 
 (defn size [^CollisionResults o]
   (.size o))
+
+
+(defn create-ray-test [collidable]
+  (let [ray     (ray (.getLocation (cam)) (.getDirection (cam)))
+        results (collide-with collidable ray (collision-results))]
+    (when (> (size results) 0)
+      (let [closest (.getClosestCollision results)]
+        {:contact-point (.getContactPoint closest)
+         :distance      (.getDistance closest)}))))
 
 
 (defmacro defsimpleapp
