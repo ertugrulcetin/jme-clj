@@ -5,7 +5,8 @@
   (:import
    (com.jme3.texture Texture$WrapMode)
    (com.jme3.terrain.heightmap HillHeightMap)
-   (com.jme3.input KeyInput)))
+   (com.jme3.input KeyInput)
+   (com.jme3.math ColorRGBA)))
 
 
 (defn on-action-listener []
@@ -64,6 +65,16 @@
         (add-control (terrain-lod-control terrain (cam))))))
 
 
+(defn- add-lights []
+  (let [sun     (-> (light :directional)
+                    (setc :direction (vec3 -0.5 -0.5 -0.5)
+                          :color ColorRGBA/White))
+        ambient (-> (light :ambient)
+                    (set* :color ColorRGBA/White))]
+    (add-light-to-root sun)
+    (add-light-to-root ambient)))
+
+
 (defn init []
   (set* (fly-cam) :move-speed 100)
   (let [bas           (attach (bullet-app-state))
@@ -74,6 +85,7 @@
         player        (create-player)
         spatial       (add-control (load-model "Models/Oto/Oto.mesh.xml") player)]
     (add-to-root (create-sky "Textures/Sky/Bright/BrightSky.dds" :cube))
+    (add-lights)
     (-> terrain
         (add-control landscape)
         (add-to-root))
@@ -119,16 +131,12 @@
         cam-dir        (-> cam-dir (setv (get* (cam) :direction)) (mult-loc 0.6))
         cam-left       (-> cam-left (setv (get* (cam) :left)) (mult-loc 0.4))
         walk-direction (setv walk-direction 0 0 0)
-        ;;TODO fix here...
-        direction      (cond
-                         left cam-left
-                         right (negate cam-left)
-                         up cam-dir
-                         down (negate cam-dir))
-        walk-direction (or (some->> direction (add-loc walk-direction))
-                           walk-direction)
+        walk-direction (cond-> walk-direction
+                               left (add-loc cam-left)
+                               right (add-loc (negate cam-left))
+                               up (add-loc cam-dir)
+                               down (add-loc (negate cam-dir)))
         loc            (get-available-loc (:player m) (:terrain m))]
-    ;;since we mutate objects internally, we don't need to return hash-map in here
     (set* player :walk-direction walk-direction)
     (set* player :physics-location loc)
     (set* (cam) :location loc)))
@@ -156,6 +164,8 @@
       (re-init init))
 
  (run app
-      (let [{:keys [bullet-app-state]} (get-state)]
-        (set* bullet-app-state :debug-enabled false)))
+      (let [{:keys [player spatial bullet-app-state]} (get-state)]
+        (set* player :view-direction (vec3 0 0 0))
+        ;(set* bullet-app-state :debug-enabled true)
+        ))
  )

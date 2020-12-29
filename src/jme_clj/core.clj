@@ -311,6 +311,10 @@
   (doto spatial (.addControl control)))
 
 
+(defn get-control [^Spatial spatial ^Class c]
+  (.getControl spatial c))
+
+
 (defn character-control [shape step-height]
   (CharacterControl. shape step-height))
 
