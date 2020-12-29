@@ -407,6 +407,10 @@
   (doto node (.attachChild s)))
 
 
+(defn detach-child [^Node node ^Spatial s]
+  (doto node (.detachChild s)))
+
+
 (defn add-to-root [^Node node]
   (.attachChild (root-node) node)
   node)
@@ -933,17 +937,22 @@
 (set! *warn-on-reflection* true)
 
 
+(defn- app-states? [s]
+  (and (instance? BaseAppState s)
+       (str/starts-with? (str s) "jme_clj.core.proxy$com.jme3.app.state.BaseAppState")))
+
+
 (defn clear
   "Detaches all child nodes and removes all local lights from the root node."
   [^SimpleApplication app]
   (let [root-node     (.getRootNode app)
-        state-manager (.getStateManager app)]
+        state-manager (.getStateManager app)
+        app-states    (filter app-states? (invoke-method state-manager "getStates"))]
     (detach-all-child root-node)
     (.clear (.getLocalLightList root-node))
-    (doseq [s (invoke-method state-manager "getStates")]
-      (when (and (instance? BaseAppState s)
-                 (str/starts-with? (str s) "jme_clj.core.proxy$com.jme3.app.state.BaseAppState"))
-        (.detach state-manager s)))
+    (doseq [^BaseAppState s app-states]
+      (.detach state-manager s))
+    (invoke-method state-manager "terminatePending")
     (reset! states {})))
 
 

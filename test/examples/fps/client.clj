@@ -1,6 +1,7 @@
 ;; Please start your REPL with `+test` profile
 (ns examples.fps.client
   (:require
+   [examples.fps.app-states :as app.states]
    [jme-clj.core :refer :all])
   (:import
    (com.jme3.texture Texture$WrapMode)
@@ -86,6 +87,7 @@
         spatial       (add-control (load-model "Models/Oto/Oto.mesh.xml") player)]
     (add-to-root (create-sky "Textures/Sky/Bright/BrightSky.dds" :cube))
     (add-lights)
+    (attach (app.states/create-cross-hairs))
     (-> terrain
         (add-control landscape)
         (add-to-root))
@@ -164,8 +166,5 @@
       (re-init init))
 
  (run app
-      (let [{:keys [player spatial bullet-app-state]} (get-state)]
-        (set* player :view-direction (vec3 0 0 0))
-        ;(set* bullet-app-state :debug-enabled true)
-        ))
+      )
  )
