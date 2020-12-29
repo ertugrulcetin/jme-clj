@@ -35,7 +35,7 @@
    (com.jme3.material Material)
    (com.jme3.math Vector3f Ray ColorRGBA Vector2f Quaternion)
    (com.jme3.renderer Camera)
-   (com.jme3.scene Geometry Node Spatial Mesh)
+   (com.jme3.scene Geometry Node Spatial Mesh Spatial$CullHint)
    (com.jme3.scene.control AbstractControl)
    (com.jme3.scene.shape Box Sphere)
    (com.jme3.system AppSettings JmeContext JmeContext$Type)
@@ -76,7 +76,10 @@
    (case type
      :app (::app @states)
      :app-state (::app-states @states)
-     :control (::controls @states))))
+     :control (::controls @states)))
+  ([type kw]
+   (let [kw (if (vector? kw) kw [kw])]
+     (get-in (get-state type) kw))))
 
 
 (defn update-state
@@ -357,6 +360,16 @@
 
 (defn unshaded-mat []
   (material "Common/MatDefs/Misc/Unshaded.j3md"))
+
+
+(defn cull-hint
+  "Possible `type` options -> :always, :dynamic, :inherit and :never"
+  [^Spatial s type]
+  (doto s (.setCullHint (case type
+                          :always Spatial$CullHint/Always
+                          :dynamic Spatial$CullHint/Dynamic
+                          :inherit Spatial$CullHint/Inherit
+                          :never Spatial$CullHint/Never))))
 
 
 (defn color-rgba [r g b a]
@@ -880,21 +893,37 @@
    controls entry.
 
    (control ::my-control
+            :init (fn [] (println \"init\" tpf))
             :update (fn [tpf] (println \"update\" tpf))
             :render (fn [rm vp] (println \"render\" rm vp)))
 
+   Also, there is `:set-spatial` callback that you can provide your custom fn. Either way, you'll have `spatial` in
+   your control's state with `:spatial` key.
+
    Please have a look Control and AbstractControl for more."
-  [kw & {:keys [update render]}]
+  [kw & {:keys [init update render] :as m}]
   (check-qualified-keyword kw)
-  (let [update (wrap-with-bound update)
-        render (wrap-with-bound render)]
-    (proxy [AbstractControl] []
-      (controlUpdate [tpf]
-        (binding [*control* this]
-          (apply-fn-in-app :control *app* kw update tpf)))
-      (controlRender [rm vp]
-        (binding [*control* this]
-          (apply-fn-in-app :control *app* kw render rm vp))))))
+  (let [init        (wrap-with-bound init)
+        update      (wrap-with-bound update)
+        render      (wrap-with-bound render)
+        set-spatial (wrap-with-bound (:set-spatial m))
+        r           (proxy [AbstractControl] []
+                      (controlUpdate [tpf]
+                        (binding [*control* this]
+                          (apply-fn-in-app :control *app* kw update tpf)))
+                      (controlRender [rm vp]
+                        (binding [*control* this]
+                          (apply-fn-in-app :control *app* kw render rm vp)))
+                      (setSpatial [spatial]
+                       ;; to avoid reflection warning
+                        (let [^AbstractControl this this]
+                          (binding [*control* this]
+                            (proxy-super setSpatial spatial)
+                            (set-state :control [kw :spatial] spatial)
+                            (apply-fn-in-app :control *app* kw set-spatial spatial)))))]
+    (binding [*control* r]
+      (apply-fn-in-app :control *app* kw init))
+    r))
 
 
 (defn get-spatial []
