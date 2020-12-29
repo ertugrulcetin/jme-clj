@@ -8,7 +8,7 @@
    (fn [name* pressed? tpf]
      (let [{:keys [player terrain audio]} (get-state)]
        (cond
-         (= ::click name*) (when pressed?
+         (= ::shoot name*) (when pressed?
                              (when-let [m (create-ray-test terrain)]
                                (play-ins audio)
                                (clojure.pprint/pprint m)))
@@ -18,13 +18,13 @@
 
 (defn- set-up-keys []
   (apply-input-mapping
-   {:triggers  {::click (mouse-trigger MouseInput/BUTTON_LEFT)
+   {:triggers  {::shoot (mouse-trigger MouseInput/BUTTON_LEFT)
                 ::left  (key-trigger KeyInput/KEY_A)
                 ::right (key-trigger KeyInput/KEY_D)
                 ::up    (key-trigger KeyInput/KEY_W)
                 ::down  (key-trigger KeyInput/KEY_S)
                 ::jump  (key-trigger KeyInput/KEY_SPACE)}
-    :listeners {(on-action-listener) [::click ::left ::right ::up ::down ::jump]}}))
+    :listeners {(on-action-listener) [::shoot ::left ::right ::up ::down ::jump]}}))
 
 
 (defn- get-available-loc [player terrain]
