@@ -15,9 +15,9 @@
                                            (* 2))
                                  :text "+"
                                  :local-translation [(- (/ (get* settings :width) 2)
-                                                        (/ (get* ch :line-width) 1))
+                                                        (/ (get* ch :line-width) 2))
                                                      (+ (/ (get* settings :height) 2)
-                                                        (/ (get* ch :line-height) 1))
+                                                        (/ (get* ch :line-height) 2))
                                                      0])
                            (#(attach-child (gui-node) %)))
                        {:ch ch}))

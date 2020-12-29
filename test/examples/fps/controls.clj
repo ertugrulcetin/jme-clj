@@ -6,10 +6,10 @@
 (defn- on-action-listener []
   (action-listener
    (fn [name* pressed? tpf]
-     (let [{:keys [player terrain audio]} (get-state)]
+     (let [{:keys [player shootables audio]} (get-state)]
        (cond
          (= ::shoot name*) (when pressed?
-                             (when-let [m (create-ray-test terrain)]
+                             (when-let [m (create-ray-test shootables)]
                                (play-ins audio)
                                (clojure.pprint/pprint m)))
          (= ::jump name*) (when pressed? (call* player :jump (vec3 0 20 0)))

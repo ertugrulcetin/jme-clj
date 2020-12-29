@@ -10,6 +10,15 @@
    (com.jme3.math ColorRGBA)))
 
 
+(defn- create-player-for-model []
+  (let [player (character-control (capsule-collision-shape 3 3.5 1) 0.05)]
+    (setc player
+          :jump-speed 20
+          :fall-speed 30
+          :gravity (vec3 0 -30 0)
+          )))
+
+
 (defn- create-player []
   (let [player (character-control (capsule-collision-shape 3 7 1) 0.05)]
     (setc player
@@ -50,18 +59,37 @@
   (let [sun     (-> (light :directional)
                     (setc :direction (vec3 -0.5 -0.5 -0.5)
                           :color ColorRGBA/White))
+        sun-b   (-> (light :directional)
+                    (setc :direction (vec3 0.5 0.5 0.5)
+                          :color ColorRGBA/White))
         ambient (-> (light :ambient)
                     (set* :color ColorRGBA/White))]
     (add-light-to-root sun)
+    (add-light-to-root sun)
+    (add-light-to-root sun-b)
+    (add-light-to-root sun-b)
     (add-light-to-root ambient)))
 
 
 (defn init-audio []
   (-> (audio-node "Sound/Effects/Gun.wav" :buffer)
       (setc :positional false
-            :looping false
-            :volume 2)
+            :looping false)
       (add-to-root)))
+
+
+(defn create-models [node bas]
+  (dotimes [_ 100]
+    (let [player  (create-player-for-model)
+          spatial (load-model "Models/Oto/Oto.mesh.xml")]
+      (-> spatial
+          (add-control player)
+          (#(attach-child node %)))
+      (-> bas
+          (get* :physics-space)
+          (call* :add player))
+      (set* player :physics-location (vec3 (rand 500) 0 (rand 500)))))
+  node)
 
 
 (defn init []
@@ -72,7 +100,9 @@
         terrain-shape (create-mesh-shape terrain)
         landscape     (rigid-body-control terrain-shape 0)
         player        (create-player)
-        spatial       (load-model "Models/Oto/Oto.mesh.xml")]
+        spatial       (load-model "Models/Oto/Oto.mesh.xml")
+        shootables    (node "shootables")]
+    (add-to-root (create-models shootables bas))
     (add-lights)
     (attach (app.states/create-cross-hairs))
     (add-to-root (create-sky "Textures/Sky/Bright/BrightSky.dds" :cube))
@@ -94,7 +124,8 @@
      :player           player
      :spatial          spatial
      :terrain          terrain
-     :audio            (init-audio)}))
+     :audio            (init-audio)
+     :shootables       shootables}))
 
 
 (defn- simple-update [tpf]
@@ -123,6 +154,8 @@
       (re-init init))
 
  (run app
-      (let [{:keys [player]} (get-state)]
-        (set* player :physics-location (vec3 500 0 0))))
+      (let [{:keys [bullet-app-state shootables]} (get-state)]
+        (set* bullet-app-state :debug-enabled false)
+        (detach-all-child shootables)
+        ))
  )
