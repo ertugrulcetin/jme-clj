@@ -346,8 +346,11 @@
   (.loadAsset (asset-manager) ^String path))
 
 
-(defn bitmap-text [gui-font right-to-left]
-  (BitmapText. gui-font right-to-left))
+(defn bitmap-text
+  ([]
+   (bitmap-text (load-font "Interface/Fonts/Default.fnt") false))
+  ([gui-font right-to-left]
+   (BitmapText. gui-font right-to-left)))
 
 
 (defn box [x y z]

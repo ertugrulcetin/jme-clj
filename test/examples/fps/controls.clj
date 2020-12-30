@@ -1,6 +1,7 @@
 (ns examples.fps.controls
   (:require [jme-clj.core :refer :all])
-  (:import (com.jme3.input KeyInput MouseInput)))
+  (:import (com.jme3.input KeyInput MouseInput)
+           (com.jme3.math ColorRGBA)))
 
 
 (defn- find-node-got-shot [geometry]
@@ -88,6 +89,26 @@
           (#(attach-child (gui-node) %))))))
 
 
+(defn- render-hp-text [hp-text]
+  (detach-child (gui-node) hp-text)
+  (let [hp       (-> (get-state) :player-data :hp)
+        settings (get* (context) :settings)]
+    (-> hp-text
+        (setc :size (-> (get* hp-text :font)
+                        (get* :char-set)
+                        (get* :rendered-size)
+                        (* 2))
+              :text (str hp)
+              :color (cond
+                       (> hp 70) ColorRGBA/Green
+                       (<= 40 hp 70) ColorRGBA/Orange
+                       :else ColorRGBA/Red)
+              :local-translation [(/ (get* settings :width) 2)
+                                  (get* hp-text :line-height)
+                                  0])
+        (#(attach-child (gui-node) %)))))
+
+
 (defn create-user-input [player terrain]
   (control ::user-input
            :init (fn []
@@ -101,7 +122,8 @@
                     :right          false
                     :damage         0
                     :damage-timer   0
-                    :damage-text    (bitmap-text (load-font "Interface/Fonts/Default.fnt") false)})
+                    :damage-text    (bitmap-text)
+                    :hp-text        (bitmap-text)})
            :update (fn [tpf]
                      (update-state :control [::user-input :damage-timer] + tpf)
                      (let [state          (get-state :control ::user-input)
@@ -117,4 +139,5 @@
                        (set* player :walk-direction walk-direction)
                        (set* player :physics-location loc)
                        (set* (cam) :location loc)
-                       (render-hit-text state)))))
+                       (render-hit-text state)
+                       (render-hp-text (:hp-text state))))))

@@ -130,7 +130,9 @@
     (-> bas
         (get* :physics-space)
         (call* :add-all spatial))
-    {:bullet-app-state bas
+    {:player-data      {:hp   100
+                        :name "ertu"}
+     :bullet-app-state bas
      :player           player
      :spatial          spatial
      :terrain          terrain
@@ -165,19 +167,9 @@
       (re-init init))
 
  (run app
-      (doseq [p (.getProcessors (view-port))]
-        (.removeProcessor (view-port) p)))
+      (set-state [:player-data :hp] 39))
 
  (run app
-      (let [{:keys [bullet-app-state shootables]} (get-state)]
-        ;(set* bullet-app-state :debug-enabled false)
-        ;(detach-all-child shootables)
-        (let [fpp (set* (FilterPostProcessor. (asset-manager)) :num-samples 2)
-              cs  (ColorScaleFilter.)]
-          (.addFilter fpp cs)
-          #_(setc cs
-                  :filter-color (.clone (ColorRGBA/Red))
-                  :color-density 1)
-          (.addProcessor (view-port) fpp))
+      (let [{:keys [bullet-app-state shootables player-data]} (get-state)]
         ))
  )

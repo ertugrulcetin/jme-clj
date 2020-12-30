@@ -74,7 +74,8 @@
                          ["eastwood"]]
             "clj-kondo" ["with-profile" "+dev" "run" "-m" "clj-kondo.main"]}
 
-  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
+  :jvm-opts ^:replace ["-XX:+UseZGC"
+                       "-XX:-OmitStackTraceInFastThrow"
                        "-XX:+ScavengeBeforeFullGC"
                        "-XX:+IgnoreUnrecognizedVMOptions"
                        "-Djava.net.preferIPv4Stack=true"
