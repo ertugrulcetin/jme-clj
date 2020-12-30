@@ -69,6 +69,12 @@
       (add-to-root)))
 
 
+(defn- generate-rand-location []
+  (let [x (if (= 0 (rand-int 2)) 1 -1)
+        z (if (= 0 (rand-int 2)) 1 -1)]
+    (vec3 (* (rand 500) x) 0 (* (rand 500) z))))
+
+
 (defn create-models [node bas]
   (dotimes [i 100]
     (let [player  (setc (character-control (capsule-collision-shape 3 3.5 1) 0.05)
@@ -84,7 +90,7 @@
       (-> bas
           (get* :physics-space)
           (call* :add player))
-      (set* player :physics-location (vec3 (rand 500) 0 (rand 500)))))
+      (set* player :physics-location (generate-rand-location))))
   node)
 
 
@@ -151,7 +157,8 @@
 
  (run app
       (let [{:keys [bullet-app-state shootables]} (get-state)]
-        (set* bullet-app-state :debug-enabled false)
-        (detach-all-child shootables)
+        ;(set* bullet-app-state :debug-enabled false)
+        ;(detach-all-child shootables)
+        (detach-all-child (gui-node))
         ))
  )

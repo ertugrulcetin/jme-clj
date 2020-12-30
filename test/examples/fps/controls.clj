@@ -22,11 +22,13 @@
        (cond
          (= ::shoot name*) (when pressed?
                              (when-let [{:keys [distance geometry]} (create-ray-test shootables)]
-                               (play-ins audio)
+                               ;(play-ins audio)
                                (let [node   (find-node-got-shot geometry)
                                      damage (get-damage distance)
                                      hp     (get* node :user-data "hp")
                                      hp     (Math/max (long (- hp damage)) 0)]
+                                 (set-state :control [::user-input :damage] (long damage))
+                                 (set-state :control [::user-input :damage-timer] 0)
                                  (set* node :user-data "hp" hp)
                                  (when (= hp 0)
                                    (-> bullet-app-state
@@ -58,6 +60,31 @@
       (.setZ z))))
 
 
+(defn- render-hit-text [state]
+  (detach-child (gui-node) (:damage-text state))
+  (when (<= (:damage-timer state) 0.5)
+    (let [text     (:damage-text state)
+          gui-font (get* text :font)
+          settings (get* (context) :settings)
+          padding  (if (>= (:damage state) 10) 20 15)]
+      (detach-child (gui-node) text)
+      (-> text
+          (setc :size (-> gui-font
+                          (get* :char-set)
+                          (get* :rendered-size)
+                          (* 1.5))
+                :text (str (:damage state))
+                :color (color-rgba 0 70 0 1)
+                :local-translation [(+ (- (/ (get* settings :width) 2)
+                                          (/ (get* text :line-width) 2))
+                                       padding)
+                                    (+ (/ (get* settings :height) 2)
+                                       (/ (get* text :line-height) 2)
+                                       padding)
+                                    0])
+          (#(attach-child (gui-node) %))))))
+
+
 (defn create-user-input [player terrain]
   (control ::user-input
            :init (fn []
@@ -68,8 +95,12 @@
                     :up             false
                     :down           false
                     :left           false
-                    :right          false})
+                    :right          false
+                    :damage         0
+                    :damage-timer   0
+                    :damage-text    (bitmap-text (load-font "Interface/Fonts/Default.fnt") false)})
            :update (fn [tpf]
+                     (update-state :control [::user-input :damage-timer] + tpf)
                      (let [state          (get-state :control ::user-input)
                            cam-dir        (-> (:cam-dir state) (setv (get* (cam) :direction)) (mult-loc 0.6))
                            cam-left       (-> (:cam-left state) (setv (get* (cam) :left)) (mult-loc 0.4))
@@ -82,4 +113,5 @@
                            loc            (get-available-loc player terrain)]
                        (set* player :walk-direction walk-direction)
                        (set* player :physics-location loc)
-                       (set* (cam) :location loc)))))
+                       (set* (cam) :location loc)
+                       (render-hit-text state)))))
