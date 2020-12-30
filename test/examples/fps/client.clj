@@ -10,15 +10,6 @@
    (com.jme3.math ColorRGBA)))
 
 
-(defn- create-player-for-model []
-  (let [player (character-control (capsule-collision-shape 3 3.5 1) 0.05)]
-    (setc player
-          :jump-speed 20
-          :fall-speed 30
-          :gravity (vec3 0 -30 0)
-          )))
-
-
 (defn- create-player []
   (let [player (character-control (capsule-collision-shape 3 7 1) 0.05)]
     (setc player
@@ -79,10 +70,15 @@
 
 
 (defn create-models [node bas]
-  (dotimes [_ 100]
-    (let [player  (create-player-for-model)
+  (dotimes [i 100]
+    (let [player  (setc (character-control (capsule-collision-shape 3 3.5 1) 0.05)
+                        :jump-speed 20
+                        :fall-speed 30
+                        :gravity (vec3 0 -30 0))
           spatial (load-model "Models/Oto/Oto.mesh.xml")]
       (-> spatial
+          (set* :user-data "name" (str "model_" i))
+          (set* :user-data "hp" 100)
           (add-control player)
           (#(attach-child node %)))
       (-> bas

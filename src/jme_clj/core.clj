@@ -438,6 +438,10 @@
   node)
 
 
+(defn remove-from-parent [^Node node]
+  (doto node .removeFromParent))
+
+
 (defn ^JmeContext context []
   (.getContext *app*))
 
@@ -789,7 +793,8 @@
     (when (> (size results) 0)
       (let [closest (.getClosestCollision results)]
         {:contact-point (.getContactPoint closest)
-         :distance      (.getDistance closest)}))))
+         :distance      (.getDistance closest)
+         :geometry      (.getGeometry closest)}))))
 
 
 (defmacro defsimpleapp

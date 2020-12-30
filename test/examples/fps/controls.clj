@@ -3,15 +3,36 @@
   (:import (com.jme3.input KeyInput MouseInput)))
 
 
+(defn- find-node-got-shot [geometry]
+  (->> geometry
+       (iterate (memfn getParent))
+       (take-while some?)
+       (filter #(get* % :user-data "name"))
+       first))
+
+
+(defn- get-damage [distance]
+  (* (Math/pow 2 (/ distance 128)) 3))
+
+
 (defn- on-action-listener []
   (action-listener
    (fn [name* pressed? tpf]
-     (let [{:keys [player shootables audio]} (get-state)]
+     (let [{:keys [player shootables audio bullet-app-state]} (get-state)]
        (cond
          (= ::shoot name*) (when pressed?
-                             (when-let [m (create-ray-test shootables)]
+                             (when-let [{:keys [distance geometry]} (create-ray-test shootables)]
                                (play-ins audio)
-                               (clojure.pprint/pprint m)))
+                               (let [node   (find-node-got-shot geometry)
+                                     damage (get-damage distance)
+                                     hp     (get* node :user-data "hp")
+                                     hp     (Math/max (long (- hp damage)) 0)]
+                                 (set* node :user-data "hp" hp)
+                                 (when (= hp 0)
+                                   (-> bullet-app-state
+                                       (get* :physics-space)
+                                       (call* :remove-all node))
+                                   (remove-from-parent node)))))
          (= ::jump name*) (when pressed? (call* player :jump (vec3 0 20 0)))
          :else (set-state :control [::user-input (-> name* name keyword)] pressed?))))))
 
