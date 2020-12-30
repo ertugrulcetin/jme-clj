@@ -12,7 +12,7 @@
 
 
 (defn- get-damage [distance]
-  (* (Math/pow 2 (/ distance 128)) 3))
+  (* (Math/pow 2 (/ distance (rand-nth (range 110 130)))) 3))
 
 
 (defn- on-action-listener []
