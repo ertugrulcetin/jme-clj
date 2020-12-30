@@ -418,6 +418,12 @@
   app-state)
 
 
+(defn attach-all [& app-states]
+  (doseq [a app-states]
+    (attach a))
+  app-states)
+
+
 (defn detach [app-state]
   (.detach (state-manager) app-state)
   app-state)

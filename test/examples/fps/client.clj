@@ -114,7 +114,8 @@
         shootables    (node "shootables")]
     (add-to-root (create-models shootables bas))
     (add-lights)
-    (attach (app.states/create-cross-hairs))
+    (attach-all (app.states/create-hp)
+                (app.states/create-cross-hairs))
     (add-to-root (create-sky "Textures/Sky/Bright/BrightSky.dds" :cube))
     (-> spatial
         (add-control player)
@@ -167,7 +168,7 @@
       (re-init init))
 
  (run app
-      (set-state [:player-data :hp] 39))
+      (set-state [:player-data :hp] 75))
 
  (run app
       (let [{:keys [bullet-app-state shootables player-data]} (get-state)]
