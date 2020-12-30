@@ -18,7 +18,7 @@
 (defn- on-action-listener []
   (action-listener
    (fn [name* pressed? tpf]
-     (let [{:keys [player shootables audio bullet-app-state]} (get-state)]
+     (let [{:keys [player shootables audio bullet-app-state damage-filter]} (get-state)]
        (cond
          (= ::shoot name*) (when pressed?
                              (when-let [{:keys [distance geometry]} (create-ray-test shootables)]
@@ -29,6 +29,7 @@
                                      hp     (Math/max (long (- hp damage)) 0)]
                                  (set-state :control [::user-input :damage] (long damage))
                                  (set-state :control [::user-input :damage-timer] 0)
+                                 (call* (view-port) :add-processor damage-filter)
                                  (set* node :user-data "hp" hp)
                                  (when (= hp 0)
                                    (-> bullet-app-state
@@ -62,7 +63,9 @@
 
 (defn- render-hit-text [state]
   (detach-child (gui-node) (:damage-text state))
+  (call* (view-port) :remove-processor (get-state :app :damage-filter))
   (when (<= (:damage-timer state) 0.5)
+    (call* (view-port) :add-processor (get-state :app :damage-filter))
     (let [text     (:damage-text state)
           gui-font (get* text :font)
           settings (get* (context) :settings)

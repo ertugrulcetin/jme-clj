@@ -7,7 +7,9 @@
   (:import
    (com.jme3.texture Texture$WrapMode)
    (com.jme3.terrain.heightmap HillHeightMap)
-   (com.jme3.math ColorRGBA)))
+   (com.jme3.math ColorRGBA)
+   (com.jme3.post FilterPostProcessor)
+   (org.jme.filter ColorScaleFilter)))
 
 
 (defn- create-player []
@@ -94,6 +96,12 @@
   node)
 
 
+(defn- create-damage-filter []
+  (let [fpp (set* (FilterPostProcessor. (asset-manager)) :num-samples 4)
+        cs  (ColorScaleFilter.)]
+    (doto fpp (.addFilter cs))))
+
+
 (defn init []
   (set* (fly-cam) :move-speed 100)
   (let [bas           (attach (bullet-app-state))
@@ -127,7 +135,8 @@
      :spatial          spatial
      :terrain          terrain
      :audio            (init-audio)
-     :shootables       shootables}))
+     :shootables       shootables
+     :damage-filter    (create-damage-filter)}))
 
 
 (defn- simple-update [tpf]
@@ -156,9 +165,19 @@
       (re-init init))
 
  (run app
+      (doseq [p (.getProcessors (view-port))]
+        (.removeProcessor (view-port) p)))
+
+ (run app
       (let [{:keys [bullet-app-state shootables]} (get-state)]
         ;(set* bullet-app-state :debug-enabled false)
         ;(detach-all-child shootables)
-        (detach-all-child (gui-node))
+        (let [fpp (set* (FilterPostProcessor. (asset-manager)) :num-samples 2)
+              cs  (ColorScaleFilter.)]
+          (.addFilter fpp cs)
+          #_(setc cs
+                  :filter-color (.clone (ColorRGBA/Red))
+                  :color-density 1)
+          (.addProcessor (view-port) fpp))
         ))
  )
