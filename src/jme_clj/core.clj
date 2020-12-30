@@ -7,10 +7,10 @@
   (:import
    (clojure.lang Var)
    (com.jme3.animation AnimEventListener AnimControl AnimChannel)
-   (com.jme3.app SimpleApplication)
+   (com.jme3.app SimpleApplication ResetStatsState StatsAppState FlyCamAppState DebugKeysAppState)
    (com.jme3.app.state AppStateManager BaseAppState)
    (com.jme3.asset AssetManager)
-   (com.jme3.audio AudioNode AudioData$DataType)
+   (com.jme3.audio AudioNode AudioData$DataType AudioListenerState)
    (com.jme3.bullet BulletAppState)
    (com.jme3.bullet.collision.shapes CapsuleCollisionShape)
    (com.jme3.bullet.control RigidBodyControl CharacterControl BetterCharacterControl)
@@ -979,17 +979,21 @@
 (set! *warn-on-reflection* true)
 
 
-(defn- app-states? [s]
-  (and (instance? BaseAppState s)
-       (str/starts-with? (str s) "jme_clj.core.proxy$com.jme3.app.state.BaseAppState")))
+(defn- not-default-app-state? [s]
+  (not-any? #(instance? % s) #{AudioListenerState
+                               DebugKeysAppState
+                               FlyCamAppState
+                               ResetStatsState
+                               StatsAppState}))
 
 
 (defn clear
   "Detaches all child nodes and removes all local lights from the root node."
   [^SimpleApplication app]
+
   (let [root-node     (.getRootNode app)
         state-manager (.getStateManager app)
-        app-states    (filter app-states? (invoke-method state-manager "getStates"))]
+        app-states    (filter not-default-app-state? (invoke-method state-manager "getStates"))]
     (detach-all-child root-node)
     (.clear (.getLocalLightList root-node))
     (doseq [^BaseAppState s app-states]
