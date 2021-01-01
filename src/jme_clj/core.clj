@@ -349,6 +349,8 @@
 (defn bitmap-text
   ([]
    (bitmap-text (load-font "Interface/Fonts/Default.fnt") false))
+  ([gui-font]
+   (BitmapText. gui-font false))
   ([gui-font right-to-left]
    (BitmapText. gui-font right-to-left)))
 

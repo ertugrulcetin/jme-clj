@@ -9,7 +9,10 @@
    (com.jme3.terrain.heightmap HillHeightMap)
    (com.jme3.math ColorRGBA)
    (com.jme3.post FilterPostProcessor)
-   (org.jme.filter ColorScaleFilter)))
+   (org.jme.filter ColorScaleFilter)
+   (com.jme3.material RenderState$BlendMode)
+   (com.jme3.scene.shape Quad)
+   (com.jme3.scene Spatial$CullHint)))
 
 
 (defn- create-player []
@@ -78,7 +81,7 @@
 
 
 (defn create-models [node bas]
-  (dotimes [i 100]
+  (dotimes [i 10]
     (let [player  (setc (character-control (capsule-collision-shape 3 3.5 1) 0.05)
                         :jump-speed 20
                         :fall-speed 30
@@ -164,13 +167,39 @@
  ;;after calling unbind-app, we need to re-define the app with defsimpleapp
  (unbind-app #'app)
 
+
  (run app
       (re-init init))
 
  (run app
-      (set-state [:player-data :hp] 75))
+      (let [mat          (set* (unshaded-mat) :color "Color" (color-rgba 0 0 0 0.5))
+            settings     (get* (context) :settings)
+            width        (get* settings :width)
+            height       (get* settings :height)
+            table-width  (/ width 1.2)
+            table-height (/ height 1.2)
+            geom         (geo "darken" (Quad. table-width table-height))
+            ]
+        (println "gap:" (- width table-width))
+        (-> mat
+            (get* :additional-render-state)
+            (set* :blend-mode RenderState$BlendMode/Alpha))
+        (setc geom
+              :material mat
+              :local-translation [(/ (- width table-width) 2) (/ (- height table-height) 2) -1]
+              :cull-hint Spatial$CullHint/Never)
+        (attach-child (gui-node) geom)))
 
  (run app
-      (let [{:keys [bullet-app-state shootables player-data]} (get-state)]
-        ))
+      (let [hp-text      (bitmap-text)
+            settings     (get* (context) :settings)
+            width        (get* settings :width)
+            height       (get* settings :height)
+            table-width  (/ width 1.2)
+            table-height (/ height 1.2)]
+        (-> hp-text
+            (setc :text "denem"
+                  :local-translation [(- width table-width) (* (- height table-height) 4) -1])
+            (#(attach-child (gui-node) %)))))
  )
+
