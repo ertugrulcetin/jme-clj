@@ -1,14 +1,13 @@
 (ns jme-clj.core
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.string :as str]
    [kezban.core :as k]
    [potemkin :as p])
   (:import
    (clojure.lang Var)
    (com.jme3.animation AnimEventListener AnimControl AnimChannel)
    (com.jme3.app SimpleApplication ResetStatsState StatsAppState FlyCamAppState DebugKeysAppState)
-   (com.jme3.app.state AppStateManager BaseAppState)
+   (com.jme3.app.state AppStateManager BaseAppState AppState)
    (com.jme3.asset AssetManager)
    (com.jme3.audio AudioNode AudioData$DataType AudioListenerState)
    (com.jme3.bullet BulletAppState)
@@ -1012,7 +1011,7 @@
         app-states    (filter not-default-app-state? (invoke-method state-manager "getStates"))]
     (detach-all-child root-node)
     (.clear (.getLocalLightList root-node))
-    (doseq [^BaseAppState s app-states]
+    (doseq [^AppState s app-states]
       (.detach state-manager s))
     (invoke-method state-manager "terminatePending")
     (reset! states {})))

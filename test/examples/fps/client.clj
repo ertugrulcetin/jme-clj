@@ -81,7 +81,7 @@
 
 
 (defn create-models [node bas]
-  (dotimes [i 10]
+  (dotimes [i 50]
     (let [player  (setc (character-control (capsule-collision-shape 3 3.5 1) 0.05)
                         :jump-speed 20
                         :fall-speed 30
