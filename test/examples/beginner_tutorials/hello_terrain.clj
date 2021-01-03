@@ -14,9 +14,9 @@
         rock           (set* (load-texture "Textures/Terrain/splat/road.jpg") :wrap Texture$WrapMode/Repeat)
         mat            (material "Common/MatDefs/Terrain/Terrain.j3md")
         height-map-tex (load-texture "Textures/Terrain/splat/mountains512.png")
-        height-map     (->> height-map-tex image image-based-hm load-hm)
+        height-map     (->> height-map-tex image image-based-height-map load-height-map)
         patch-size     65
-        terrain        (terrain-quad "my terrain" patch-size 513 (get-hm height-map))]
+        terrain        (terrain-quad "my terrain" patch-size 513 (get-height-map height-map))]
     (-> mat
         (set* :texture "Alpha" (load-texture "Textures/Terrain/splat/alphamap.png"))
         (set* :texture "Tex1" grass)

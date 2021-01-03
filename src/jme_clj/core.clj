@@ -499,7 +499,7 @@
    (.scale spatial x y z)))
 
 
-(defn image-based-hm [img]
+(defn image-based-height-map [img]
   (ImageBasedHeightMap. img))
 
 
@@ -507,15 +507,15 @@
   (.getImage texture))
 
 
-(defn load-hm [^HeightMap hm]
+(defn load-height-map [^HeightMap hm]
   (doto hm .load))
 
 
-(defn get-hm [^HeightMap hm]
+(defn get-height-map [^HeightMap hm]
   (.getHeightMap hm))
 
 
-(defn hill-hm [size iterations min-radius max-radius seed]
+(defn hill-height-map [size iterations min-radius max-radius seed]
   (HillHeightMap. size iterations min-radius max-radius seed))
 
 

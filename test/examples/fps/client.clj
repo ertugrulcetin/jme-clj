@@ -40,10 +40,10 @@
 
 (defn- create-terrain [mat]
   (let [_          (set! (HillHeightMap/NORMALIZE_RANGE) 100)
-        height-map (hill-hm 513 1000 50 100 (byte 3))
+        height-map (hill-height-map 513 1000 50 100 (byte 3))
         _          (call* height-map :load)
         patch-size 65
-        terrain    (terrain-quad "my terrain" patch-size 513 (get-hm height-map))]
+        terrain    (terrain-quad "my terrain" patch-size 513 (get-height-map height-map))]
     (-> terrain
         (setc :material mat
               :local-translation [0 -100 0]
@@ -152,6 +152,7 @@
 (defsimpleapp app
               :opts {:show-settings?       false
                      :pause-on-lost-focus? false
+                     :display-stat-view?   false
                      :settings             {:title          "My JME Game"
                                             :load-defaults? true
                                             :frame-rate     60
@@ -198,8 +199,11 @@
             table-width  (/ width 1.2)
             table-height (/ height 1.2)]
         (-> hp-text
-            (setc :text "denem"
-                  :local-translation [(- width table-width) (* (- height table-height) 4) -1])
+            (setc :text "Name: Ertu | Rank: 2 | Score: 10 | Deaths: 3 - Total Users: 32"
+                  :local-translation [10 (- height 10) -1])
             (#(attach-child (gui-node) %)))))
+
+ (run app
+      (detach-all-child (gui-node)))
  )
 
