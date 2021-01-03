@@ -9,10 +9,7 @@
    (com.jme3.terrain.heightmap HillHeightMap)
    (com.jme3.math ColorRGBA)
    (com.jme3.post FilterPostProcessor)
-   (org.jme.filter ColorScaleFilter)
-   (com.jme3.material RenderState$BlendMode)
-   (com.jme3.scene.shape Quad)
-   (com.jme3.scene Spatial$CullHint)))
+   (org.jme.filter ColorScaleFilter)))
 
 
 (defn- create-player []
@@ -165,45 +162,10 @@
 (comment
  (start app)
 
- ;;after calling unbind-app, we need to re-define the app with defsimpleapp
- (unbind-app #'app)
-
-
  (run app
       (re-init init))
 
- (run app
-      (let [mat          (set* (unshaded-mat) :color "Color" (color-rgba 0 0 0 0.5))
-            settings     (get* (context) :settings)
-            width        (get* settings :width)
-            height       (get* settings :height)
-            table-width  (/ width 1.2)
-            table-height (/ height 1.2)
-            geom         (geo "darken" (Quad. table-width table-height))
-            ]
-        (println "gap:" (- width table-width))
-        (-> mat
-            (get* :additional-render-state)
-            (set* :blend-mode RenderState$BlendMode/Alpha))
-        (setc geom
-              :material mat
-              :local-translation [(/ (- width table-width) 2) (/ (- height table-height) 2) -1]
-              :cull-hint Spatial$CullHint/Never)
-        (attach-child (gui-node) geom)))
-
- (run app
-      (let [hp-text      (bitmap-text)
-            settings     (get* (context) :settings)
-            width        (get* settings :width)
-            height       (get* settings :height)
-            table-width  (/ width 1.2)
-            table-height (/ height 1.2)]
-        (-> hp-text
-            (setc :text "Name: Ertu | Rank: 2 | Score: 10 | Deaths: 3 - Total Users: 32"
-                  :local-translation [10 (- height 10) -1])
-            (#(attach-child (gui-node) %)))))
-
- (run app
-      (detach-all-child (gui-node)))
+ ;;after calling unbind-app, we need to re-define the app with defsimpleapp
+ (unbind-app #'app)
  )
 
