@@ -1,16 +1,15 @@
 (ns jme-clj.core
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.string :as str]
    [kezban.core :as k]
    [potemkin :as p])
   (:import
    (clojure.lang Var)
    (com.jme3.animation AnimEventListener AnimControl AnimChannel)
-   (com.jme3.app SimpleApplication)
-   (com.jme3.app.state AppStateManager BaseAppState)
+   (com.jme3.app SimpleApplication ResetStatsState StatsAppState FlyCamAppState DebugKeysAppState)
+   (com.jme3.app.state AppStateManager BaseAppState AppState)
    (com.jme3.asset AssetManager)
-   (com.jme3.audio AudioNode AudioData$DataType)
+   (com.jme3.audio AudioNode AudioData$DataType AudioListenerState)
    (com.jme3.bullet BulletAppState)
    (com.jme3.bullet.collision.shapes CapsuleCollisionShape)
    (com.jme3.bullet.control RigidBodyControl CharacterControl BetterCharacterControl)
@@ -35,15 +34,15 @@
    (com.jme3.material Material)
    (com.jme3.math Vector3f Ray ColorRGBA Vector2f Quaternion)
    (com.jme3.renderer Camera)
-   (com.jme3.scene Geometry Node Spatial Mesh)
+   (com.jme3.scene Geometry Node Spatial Mesh Spatial$CullHint)
    (com.jme3.scene.control AbstractControl)
    (com.jme3.scene.shape Box Sphere)
    (com.jme3.system AppSettings JmeContext JmeContext$Type)
    (com.jme3.terrain Terrain)
    (com.jme3.terrain.geomipmap TerrainQuad TerrainLodControl)
-   (com.jme3.terrain.heightmap ImageBasedHeightMap HeightMap)
+   (com.jme3.terrain.heightmap ImageBasedHeightMap HeightMap HillHeightMap)
    (com.jme3.texture Texture)
-   (com.jme3.util TangentBinormalGenerator)))
+   (com.jme3.util TangentBinormalGenerator SkyFactory SkyFactory$EnvMapType)))
 
 (set! *warn-on-reflection* true)
 
@@ -76,7 +75,10 @@
    (case type
      :app (::app @states)
      :app-state (::app-states @states)
-     :control (::controls @states))))
+     :control (::controls @states)))
+  ([type kw]
+   (let [kw (if (vector? kw) kw [kw])]
+     (get-in (get-state type) kw))))
 
 
 (defn update-state
@@ -268,8 +270,12 @@
   (.getGuiNode *app*))
 
 
-(defn audio-node [^String name ^AudioData$DataType type]
-  (AudioNode. (asset-manager) name type))
+(defn audio-node [^String name type]
+  "Possible `type` options -> :buffer and :stream"
+  (let [^AudioData$DataType type (case type
+                                   :buffer AudioData$DataType/Buffer
+                                   :stream AudioData$DataType/Stream)]
+    (AudioNode. (asset-manager) name type)))
 
 
 (defn play [^AudioNode an]
@@ -311,6 +317,10 @@
   (doto spatial (.addControl control)))
 
 
+(defn get-control [^Spatial spatial ^Class c]
+  (.getControl spatial c))
+
+
 (defn character-control [shape step-height]
   (CharacterControl. shape step-height))
 
@@ -335,8 +345,13 @@
   (.loadAsset (asset-manager) ^String path))
 
 
-(defn bitmap-text [gui-font right-to-left]
-  (BitmapText. gui-font right-to-left))
+(defn bitmap-text
+  ([]
+   (bitmap-text (load-font "Interface/Fonts/Default.fnt") false))
+  ([gui-font]
+   (BitmapText. gui-font false))
+  ([gui-font right-to-left]
+   (BitmapText. gui-font right-to-left)))
 
 
 (defn box [x y z]
@@ -355,6 +370,16 @@
   (material "Common/MatDefs/Misc/Unshaded.j3md"))
 
 
+(defn cull-hint
+  "Possible `type` options -> :always, :dynamic, :inherit and :never"
+  [^Spatial s type]
+  (doto s (.setCullHint (case type
+                          :always Spatial$CullHint/Always
+                          :dynamic Spatial$CullHint/Dynamic
+                          :inherit Spatial$CullHint/Inherit
+                          :never Spatial$CullHint/Never))))
+
+
 (defn color-rgba [r g b a]
   (ColorRGBA. r g b a))
 
@@ -371,6 +396,17 @@
   (CollisionShapeFactory/createMeshShape spatial))
 
 
+(defn create-sky
+  "Possible `type` options -> :cube, :sphere and :equirect"
+  [path type]
+  (SkyFactory/createSky (asset-manager)
+                        ^String path
+                        ^SkyFactory$EnvMapType (case type
+                                                 :cube SkyFactory$EnvMapType/CubeMap
+                                                 :sphere SkyFactory$EnvMapType/SphereMap
+                                                 :equirect SkyFactory$EnvMapType/EquirectMap)))
+
+
 (defn rigid-body-control
   ([^Float mass]
    (RigidBodyControl. mass))
@@ -379,15 +415,27 @@
 
 
 (defn attach [app-state]
-  (doto (state-manager) (.attach app-state)))
+  (.attach (state-manager) app-state)
+  app-state)
+
+
+(defn attach-all [& app-states]
+  (doseq [a app-states]
+    (attach a))
+  app-states)
 
 
 (defn detach [app-state]
-  (doto (state-manager) (.detach app-state)))
+  (.detach (state-manager) app-state)
+  app-state)
 
 
 (defn attach-child [^Node node ^Spatial s]
   (doto node (.attachChild s)))
+
+
+(defn detach-child [^Node node ^Spatial s]
+  (doto node (.detachChild s)))
 
 
 (defn add-to-root [^Node node]
@@ -398,6 +446,10 @@
 (defn remove-from-root [^Node node]
   (.detachChild (root-node) node)
   node)
+
+
+(defn remove-from-parent [^Node node]
+  (doto node .removeFromParent))
 
 
 (defn ^JmeContext context []
@@ -447,7 +499,7 @@
    (.scale spatial x y z)))
 
 
-(defn image-based-hm [img]
+(defn image-based-height-map [img]
   (ImageBasedHeightMap. img))
 
 
@@ -455,12 +507,16 @@
   (.getImage texture))
 
 
-(defn load-hm [^HeightMap hm]
+(defn load-height-map [^HeightMap hm]
   (doto hm .load))
 
 
-(defn get-hm [^HeightMap hm]
+(defn get-height-map [^HeightMap hm]
   (.getHeightMap hm))
+
+
+(defn hill-height-map [size iterations min-radius max-radius seed]
+  (HillHeightMap. size iterations min-radius max-radius seed))
 
 
 (defn terrain-quad [name path-size total-size hm]
@@ -709,7 +765,7 @@
      (merge ~@(remove :_ (map #(hash-map (keyword %) %) (take-nth 2 bindings))))))
 
 
-(defn cam []
+(defn ^Camera cam []
   (.getCamera *app*))
 
 
@@ -732,13 +788,23 @@
   (Ray. origin direction))
 
 
-(defn collide-with [^Collidable o collidable results]
+(defn ^CollisionResults collide-with [^Collidable o collidable results]
   (.collideWith o collidable results)
   results)
 
 
 (defn size [^CollisionResults o]
   (.size o))
+
+
+(defn create-ray-test [collidable]
+  (let [ray     (ray (.getLocation (cam)) (.getDirection (cam)))
+        results (collide-with collidable ray (collision-results))]
+    (when (> (size results) 0)
+      (let [closest (.getClosestCollision results)]
+        {:contact-point (.getContactPoint closest)
+         :distance      (.getDistance closest)
+         :geometry      (.getGeometry closest)}))))
 
 
 (defmacro defsimpleapp
@@ -855,21 +921,37 @@
    controls entry.
 
    (control ::my-control
+            :init (fn [] (println \"init\" tpf))
             :update (fn [tpf] (println \"update\" tpf))
             :render (fn [rm vp] (println \"render\" rm vp)))
 
+   Also, there is `:set-spatial` callback that you can provide your custom fn. Either way, you'll have `spatial` in
+   your control's state with `:spatial` key.
+
    Please have a look Control and AbstractControl for more."
-  [kw & {:keys [update render]}]
+  [kw & {:keys [init update render] :as m}]
   (check-qualified-keyword kw)
-  (let [update (wrap-with-bound update)
-        render (wrap-with-bound render)]
-    (proxy [AbstractControl] []
-      (controlUpdate [tpf]
-        (binding [*control* this]
-          (apply-fn-in-app :control *app* kw update tpf)))
-      (controlRender [rm vp]
-        (binding [*control* this]
-          (apply-fn-in-app :control *app* kw render rm vp))))))
+  (let [init        (wrap-with-bound init)
+        update      (wrap-with-bound update)
+        render      (wrap-with-bound render)
+        set-spatial (wrap-with-bound (:set-spatial m))
+        r           (proxy [AbstractControl] []
+                      (controlUpdate [tpf]
+                        (binding [*control* this]
+                          (apply-fn-in-app :control *app* kw update tpf)))
+                      (controlRender [rm vp]
+                        (binding [*control* this]
+                          (apply-fn-in-app :control *app* kw render rm vp)))
+                      (setSpatial [spatial]
+                       ;; to avoid reflection warning
+                        (let [^AbstractControl this this]
+                          (binding [*control* this]
+                            (proxy-super setSpatial spatial)
+                            (set-state :control [kw :spatial] spatial)
+                            (apply-fn-in-app :control *app* kw set-spatial spatial)))))]
+    (binding [*control* r]
+      (apply-fn-in-app :control *app* kw init))
+    r))
 
 
 (defn get-spatial []
@@ -912,17 +994,26 @@
 (set! *warn-on-reflection* true)
 
 
+(defn- not-default-app-state? [s]
+  (not-any? #(instance? % s) #{AudioListenerState
+                               DebugKeysAppState
+                               FlyCamAppState
+                               ResetStatsState
+                               StatsAppState}))
+
+
 (defn clear
   "Detaches all child nodes and removes all local lights from the root node."
   [^SimpleApplication app]
+
   (let [root-node     (.getRootNode app)
-        state-manager (.getStateManager app)]
+        state-manager (.getStateManager app)
+        app-states    (filter not-default-app-state? (invoke-method state-manager "getStates"))]
     (detach-all-child root-node)
     (.clear (.getLocalLightList root-node))
-    (doseq [s (invoke-method state-manager "getStates")]
-      (when (and (instance? BaseAppState s)
-                 (str/starts-with? (str s) "jme_clj.core.proxy$com.jme3.app.state.BaseAppState"))
-        (.detach state-manager s)))
+    (doseq [^AppState s app-states]
+      (.detach state-manager s))
+    (invoke-method state-manager "terminatePending")
     (reset! states {})))
 
 

@@ -1,0 +1,40 @@
+MaterialDef ColorScale {
+
+    MaterialParameters {
+        Int NumSamples
+        Texture2D Texture
+        Vector4 FilterColor
+        Float ColorDensity
+        Boolean Multiply : False
+        Boolean Overlay : False
+    }
+
+    Technique {
+        VertexShader GLSL150:   Common/MatDefs/Post/Post15.vert
+        FragmentShader GLSL150: ShaderBlow/Filters/ColorScale/ColorScale15.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+        }
+
+        Defines {
+            RESOLVE_MS : NumSamples
+            MULTIPLY : Multiply
+            OVERLAY : Overlay
+        }
+    }
+
+    Technique {
+        VertexShader GLSL100:   Common/MatDefs/Post/Post.vert
+        FragmentShader GLSL100: ShaderBlow/Filters/ColorScale/ColorScale.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+        }
+
+        Defines {
+            MULTYPLY : Multiply
+            OVERLAY : Overlay
+        }
+    }
+}
