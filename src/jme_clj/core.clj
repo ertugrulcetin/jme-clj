@@ -996,6 +996,7 @@
 
 (defn- not-default-app-state? [s]
   (not-any? #(instance? % s) #{AudioListenerState
+                               BulletAppState
                                DebugKeysAppState
                                FlyCamAppState
                                ResetStatsState
@@ -1005,24 +1006,28 @@
 (defn- clear-physics [^PhysicsSpace ps]
   (when ps
     (doseq [joint (.getJointList ps)]
-      (println "joint" joint)
       (.removeJoint ps joint))
     (doseq [pco (.getPcoList ps)]
       (.removeCollisionObject ps pco))))
 
 
+(defn- clear-bullet-app-states [^SimpleApplication app]
+  (let [state-manager (.getStateManager app)]
+    (doseq [^BulletAppState s (filter #(instance? BulletAppState %) (invoke-method state-manager "getStates"))]
+      (clear-physics (.getPhysicsSpace s))
+      (.detach state-manager s))))
+
+
 (defn clear
   "Detaches all child nodes and removes all local lights from the root node."
   [^SimpleApplication app]
-
   (let [root-node     (.getRootNode app)
         state-manager (.getStateManager app)
         app-states    (filter not-default-app-state? (invoke-method state-manager "getStates"))]
     (detach-all-child root-node)
     (.clear (.getLocalLightList root-node))
+    (clear-bullet-app-states app)
     (doseq [^AppState s app-states]
-      (when (instance? BulletAppState s)
-        (clear-physics (.getPhysicsSpace ^BulletAppState s)))
       (.detach state-manager s))
     (invoke-method state-manager "terminatePending")
     (reset! states {})))
@@ -1038,6 +1043,7 @@
    after re-defining app with `defsimpleapp` then call `start` again."
   [^SimpleApplication app]
   (try
+    (clear-bullet-app-states app)
     (.stop app true)
     (catch Throwable t
       (println "Error occurred on stop." (.getMessage t)))
