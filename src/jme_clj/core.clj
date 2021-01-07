@@ -10,8 +10,8 @@
    (com.jme3.app.state AppStateManager BaseAppState AppState)
    (com.jme3.asset AssetManager)
    (com.jme3.audio AudioNode AudioData$DataType AudioListenerState)
-   (com.jme3.bullet BulletAppState)
-   (com.jme3.bullet.collision.shapes CapsuleCollisionShape)
+   (com.jme3.bullet BulletAppState PhysicsSpace)
+   (com.jme3.bullet.collision.shapes CapsuleCollisionShape BoxCollisionShape)
    (com.jme3.bullet.control RigidBodyControl CharacterControl BetterCharacterControl)
    (com.jme3.bullet.util CollisionShapeFactory)
    (com.jme3.collision CollisionResults Collidable)
@@ -1002,6 +1002,15 @@
                                StatsAppState}))
 
 
+(defn- clear-physics [^PhysicsSpace ps]
+  (when ps
+    (doseq [joint (.getJointList ps)]
+      (println "joint" joint)
+      (.removeJoint ps joint))
+    (doseq [pco (.getPcoList ps)]
+      (.removeCollisionObject ps pco))))
+
+
 (defn clear
   "Detaches all child nodes and removes all local lights from the root node."
   [^SimpleApplication app]
@@ -1012,6 +1021,8 @@
     (detach-all-child root-node)
     (.clear (.getLocalLightList root-node))
     (doseq [^AppState s app-states]
+      (when (instance? BulletAppState s)
+        (clear-physics (.getPhysicsSpace ^BulletAppState s)))
       (.detach state-manager s))
     (invoke-method state-manager "terminatePending")
     (reset! states {})))
