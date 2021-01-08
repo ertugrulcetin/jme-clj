@@ -83,7 +83,8 @@
 
   :profiles {:dev  {:dependencies [[clj-kondo "2020.10.10"]
                                    [org.clojure/tools.logging "1.1.0"]]
-                    :repl-options {:init-ns jme-clj.core}}
+                    :repl-options {:init-ns jme-clj.core}
+                    :resource-paths ["test/resources"]}
              :test {:dependencies   [[clj-kondo "2020.10.10"]
                                      [org.clojure/tools.logging "1.1.0"]]
                     :resource-paths ["test/resources"]}})
