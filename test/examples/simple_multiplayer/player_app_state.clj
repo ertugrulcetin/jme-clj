@@ -6,7 +6,7 @@
   (let [player         (load-model "Models/Oto/OtoOldAnim.j3o")
         player-control (character-control (capsule-collision-shape 3.0 4.0) 0.01)]
     (setc player-control
-          :gravity (vec3 0 -30 0)
+          :gravity 30
           :physics-location (vec3 0 100 0))
     (add-control player player-control)
     (-> bullet-as

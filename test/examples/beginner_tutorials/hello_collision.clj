@@ -16,7 +16,7 @@
      (let [{:keys [player]} (get-state)]
        (if (= ::jump name*)
          (when pressed?
-           (call* player :jump (vec3 0 20 0)))
+           (call* player :jump))
          (set-state (-> name* name keyword) pressed?))))))
 
 
@@ -55,9 +55,9 @@
         scene-model   (add-control scene-model landscape)
         capsule-shape (capsule-collision-shape 1.5 6 1)
         player        (setc (character-control capsule-shape 0.05)
-                            :jump-speed 50
+                            :jump-speed 20
                             :fall-speed 80
-                            :gravity (vec3 0 -30 0)
+                            :gravity 30
                             :physics-location (vec3 0 10 0))]
     (attach bullet-as)
     (add-to-root scene-model)

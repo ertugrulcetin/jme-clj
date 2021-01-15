@@ -17,7 +17,7 @@
     (setc player
           :jump-speed 20
           :fall-speed 30
-          :gravity (vec3 0 -30 0)
+          :gravity 30
           :physics-location (vec3 -500 0 0))))
 
 
@@ -82,7 +82,7 @@
     (let [player  (setc (character-control (capsule-collision-shape 3 3.5 1) 0.05)
                         :jump-speed 20
                         :fall-speed 30
-                        :gravity (vec3 0 -30 0))
+                        :gravity 30)
           spatial (load-model "Models/Oto/Oto.mesh.xml")]
       (-> spatial
           (set* :user-data "name" (str "model_" i))
