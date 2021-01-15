@@ -36,7 +36,7 @@
                                        (get* :physics-space)
                                        (call* :remove-all node))
                                    (remove-from-parent node)))))
-         (= ::jump name*) (when pressed? (call* player :jump (vec3 0 20 0)))
+         (= ::jump name*) (when pressed? (call* player :jump))
          :else (set-state :control [::user-input (-> name* name keyword)] pressed?))))))
 
 
