@@ -1,15 +1,15 @@
 ;; Please start your REPL with `+test` profile
 (ns examples.simple-multiplayer.client
   (:require
+   [clojure.set :as set]
    [examples.simple-multiplayer.player-app-state :as app-states.player]
    [jme-clj.core :refer :all]
-   [jme-clj.network :refer :all]
-   [clojure.set :as set])
+   [jme-clj.network :refer :all])
   (:import
+   (com.jme3.bullet.control BetterCharacterControl)
    (com.jme3.input KeyInput)
    (com.jme3.math Vector3f ColorRGBA)
-   (com.jme3.texture Texture$WrapMode)
-   (com.jme3.bullet.control BetterCharacterControl)))
+   (com.jme3.texture Texture$WrapMode)))
 
 
 (defn- init-materials []

@@ -1,0 +1,17 @@
+name: Linter
+
+on: push
+
+jobs:
+  lint:
+    name: Lint code base
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: DeLaGuardo/setup-clojure@master
+        with:
+          lein: latest
+      - run: lein deps
+      - run: lein lint
