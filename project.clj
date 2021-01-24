@@ -28,7 +28,7 @@
                  [kezban "0.1.92"]
                  [potemkin "0.4.5"]]
 
-  :plugins [[ertu/lein-bikeshed "0.1.11"]
+  :plugins [[ertu/lein-bikeshed "0.1.13"]
             [ertu/lein-carve "0.1.0"]
             [jonase/eastwood "0.3.11"]
             [lein-ancient "0.6.15"]
@@ -51,6 +51,7 @@
              :exclude-linters    [:deprecations
                                   :implicit-dependencies
                                   :unused-ret-vals
+                                  :unused-meta-on-macro
                                   :local-shadows-var
                                   :constant-test]}
 
@@ -68,7 +69,7 @@
                          ["nsort"]
                          ["bikeshed"]
                          ["carve"]
-                         ["clj-kondo" "--lint" "src" "test"]
+                         ["clj-kondo" "--lint" "src"]
                          ["kibit"]
                          ["eastwood"]]
             "clj-kondo" ["with-profile" "+dev" "run" "-m" "clj-kondo.main"]}
@@ -80,10 +81,10 @@
                        "-Djava.net.preferIPv4Stack=true"
                        "-Dfile.encoding=UTF-8"]
 
-  :profiles {:dev  {:dependencies [[clj-kondo "2020.10.10"]
-                                   [org.clojure/tools.logging "1.1.0"]]
-                    :repl-options {:init-ns jme-clj.core}
+  :profiles {:dev  {:dependencies   [[clj-kondo "2021.01.20"]
+                                     [org.clojure/tools.logging "1.1.0"]]
+                    :repl-options   {:init-ns jme-clj.core}
                     :resource-paths ["test/resources"]}
-             :test {:dependencies   [[clj-kondo "2020.10.10"]
+             :test {:dependencies   [[clj-kondo "2021.01.20"]
                                      [org.clojure/tools.logging "1.1.0"]]
                     :resource-paths ["test/resources"]}})

@@ -270,8 +270,9 @@
   (.getGuiNode *app*))
 
 
-(defn audio-node [^String name type]
+(defn audio-node
   "Possible `type` options -> :buffer and :stream"
+  [^String name type]
   (let [^AudioData$DataType type (case type
                                    :buffer AudioData$DataType/Buffer
                                    :stream AudioData$DataType/Stream)]
@@ -807,7 +808,7 @@
          :geometry      (.getGeometry closest)}))))
 
 
-(defmacro defsimpleapp
+(defmacro ^{:ignore-long-fn? true} defsimpleapp
   "Creates a SimpleApplication instance and binds with given name. Requires 3 parameters besides name.
    init   (initialize fn, required)
    update (update fn, optional)
@@ -874,7 +875,7 @@
           type   (case type
                    :app-state ::app-states
                    :control ::controls)]
-      (if (map? result)
+      (when (map? result)
         (swap! states update-in [type kw] merge result)))))
 
 
@@ -989,8 +990,8 @@
 (defn- invoke-method [obj fn-name-string & args]
   (let [m (first (filter (fn [x] (.. x getName (equals fn-name-string)))
                          (.. obj getClass getDeclaredMethods)))]
-    (. m (setAccessible true))
-    (. m (invoke obj args))))
+    (.setAccessible m true)
+    (.invoke m obj args)))
 (set! *warn-on-reflection* true)
 
 

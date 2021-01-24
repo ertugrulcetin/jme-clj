@@ -5,10 +5,10 @@
    [examples.fps.controls :as controls]
    [jme-clj.core :refer :all])
   (:import
-   (com.jme3.texture Texture$WrapMode)
-   (com.jme3.terrain.heightmap HillHeightMap)
    (com.jme3.math ColorRGBA)
    (com.jme3.post FilterPostProcessor)
+   (com.jme3.terrain.heightmap HillHeightMap)
+   (com.jme3.texture Texture$WrapMode)
    (org.jme.filter ColorScaleFilter)))
 
 
