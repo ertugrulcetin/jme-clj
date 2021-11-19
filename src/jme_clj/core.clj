@@ -1,4 +1,5 @@
 (ns jme-clj.core
+  "Clojure wrappers round many commonly used JME methods."
   (:require
    [camel-snake-kebab.core :as csk]
    [kezban.core :as k]
@@ -48,14 +49,23 @@
 
 (defonce ^{:doc "The mutable global state of the application.
                  It keeps app, app-state, control states and others."}
-         states (atom {}))
+  states (atom {}))
 
 (defonce ^{:doc "A list of SimpleApplication instances created with `defsimpleapp`."}
-         instances (atom []))
+  instances (atom []))
 
-(def ^{:dynamic true
+(def ^{:doc "The currently active [`SimpleApplication`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/SimpleApplication.html) instance, if any.
+             
+             **Note that** many functions will fail if `*app* is bound to anything
+             other than a `SimpleApplication`."
+       :dynamic true
        :tag     SimpleApplication}
-  *app* nil)
+  *app*
+  "The currently active [`SimpleApplication`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/SimpleApplication.html) instance, if any.
+             
+  **Note that** many functions will fail if `*app*` is bound to anything
+  other than a `SimpleApplication`."
+  nil)
 
 (def ^{:dynamic true
        :tag     AbstractControl}
@@ -63,12 +73,19 @@
 
 
 (defn get-main-state
-  "Returns the mutable global state map."
+  "Returns the mutable global state map [`states`](#var-states)."
   []
   @states)
 
 
 (defn get-state
+  "With no arguments, returns the current value of `::app` in [`states`](#var-states);
+   with one argument, `type`, expected to be one of `:app`, `app-state` or
+   `:control`, returns the appropriate value from `states`; with two arguments, 
+   returns the value identified by the key or sequence of keys `kw` within that part
+   of the `states` map identified by `type`.
+   
+   An exception is thrown if `type` is not one of the expected values."
   ([]
    (get-state :app))
   ([type]
@@ -82,6 +99,13 @@
 
 
 (defn update-state
+  "Prepends `type`, expected to be one of `:app`, `app-state` or `:control`, to
+   `ks`, expected to be a key or sequence of keys, as a path through 
+   [`states`](#var-states) and updates states by replacing the value identified
+   with the result of applying the function `f`  to that value, with any 
+   additional `args` supplied.
+   
+   An exception is thrown if `type` is not one of the expected values."
   [type ks f & args]
   (let [kw (case type
              :app ::app
@@ -93,6 +117,13 @@
 
 
 (defn set-state
+  "Treats `ks`, expected to be a key or sequence of keys, as a path
+   prefixed by `type` (or `::app` if `type` is not supplied) through 
+   [`states`](#var-states) and updates states by setting the value 
+   identified by that path to `v`.
+   
+   An exception is thrown if any sub-path of `ks` already identifies
+   something which is not an [associative](https://clojuredocs.org/clojure.core/associative_q)."
   ([ks v]
    (set-state :app ks v))
   ([type ks v]
@@ -106,6 +137,10 @@
 
 
 (defn remove-state
+  "Treats `ks`, expected to be a key or sequence of keys, as a path
+   prefixed by `type` (or `::app` if `type` is not supplied) through 
+   [`states`](#var-states) and updates states by removing the value 
+   identified by that path."
   ([ks]
    (remove-state :app ks))
   ([type ks]
@@ -118,7 +153,7 @@
 
 
 (defn app-settings
-  "Creates an AppSettings instance."
+  "Creates an [AppSettings](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/system/AppSettings.html) instance."
   [load-defaults? & {:keys [fullscreen?
                             vsync?
                             width
@@ -197,6 +232,21 @@
 
 
 (defn vec3
+  "With zero arguments, returns a three dimensional vector <0.0, 0.0, 0.0>;
+   with one argument, expected to be a [Vector3f](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/math/Vector3f.html) object, returns
+   a copy of that vector; with three arguments, expected all to be 
+   numbers, returns a three dimensional vector of those numbers; with three
+   arguments, where the first three are numbers, returns a three dimensional
+   vector of those numbers, which will be [normalised](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/math/Vector2f.html#normalize--) 
+   to the unit vector if and only if the fourth argument is the keyword
+   `:normalize`.
+   
+   **Exceptions will be thrown** if
+   1. a single argument is not a Vector2f object;
+   2. any numeric argument is too large to be converted to a Java float.
+   
+   **Note also** that any fourth argument which is not the keyword `:normalize` 
+   will be ignored."
   ([]
    (Vector3f.))
   ([v]
@@ -210,6 +260,21 @@
 
 
 (defn vec2
+  "With zero arguments, returns a two dimensional vector <0.0, 0.0>;
+   with one argument, expected to be a [Vector2f](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/math/Vector2f.html) object, returns
+   a copy of that vector; with two arguments, expected both to be 
+   numbers, returns a two dimensional vector of those numbers; with three
+   arguments, where the first two of numbers, returns a two dimensional
+   vector of those numbers, which will be [normalised](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/math/Vector2f.html#normalize--) 
+   to the unit vector if and only if the third argument is the keyword
+   `:normalize`.
+   
+   **Exceptions will be thrown** if
+   1. a single argument is not a Vector2f object;
+   2. any numeric argument is too large to be converted to a Java float.
+   
+   **Note also** that any third argument which is not the keyword `:normalize` 
+   will be ignored."
   ([]
    (Vector2f.))
   ([v]
@@ -223,6 +288,15 @@
 
 
 (defn quat
+  "Returns a [Quaternion](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/math/Quaternion.html) object. If no args are passed, the object will
+   have the values <0, 0, 0, 1>; if four arguments `x`, `y`, `z`, `w` are 
+   passed, such that all are numbers which can be cast to floats, the object 
+   will have those values.
+
+   **Note that** if three arguments are passed, the first two must quaternions 
+   and the third a number, otherwise an exception will be thrown; this is not
+   what seems to be implied by the signature!
+   "
   ([]
    (Quaternion.))
   ([^Float x ^Float y ^Float z]
@@ -231,47 +305,92 @@
    (Quaternion. x y z w)))
 
 
-(defn vec3->vec [^Vector3f v]
+(defn vec3->vec
+  "Given a [Vector3f](https://javadoc.jmonkeyengine.org/v3.x/com/jme3/math/Vector3f.html)
+   object `v`, return a Clojure vector having the components of `v`."
+  [^Vector3f v]
   [(.-x v) (.-y v) (.-z v)])
 
 
-(defn vec->vec3 [v]
+(defn vec->vec3
+  "Given a Clojure sequence `v` of three numbers, returns a corresponding 
+   [Vector3f](https://javadoc.jmonkeyengine.org/v3.x/com/jme3/math/Vector3f.html) object. 
+   Any fourth element in `v` will be ignored unless it is the keyword `normalize`, in
+   which case the vector returned will be normalised to the unit vector.
+   
+   **An exception will be thrown** if 
+   1. there are fewer than three elements in `v`;
+   2. the first three elements of `v` are not numbers castable to Java float;
+   3. there are more than four elements in `v`."
+  [v]
   (apply vec3 v))
 
 
-(defn quat->vec [^Quaternion q]
+(defn quat->vec
+  "Given a [Quaternion](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/math/Quaternion.html)
+   object `q`, return a Clojure vector of four elements being the components of
+   `q`.
+   
+   **An exception may be thrown** if `q` is not a Quaternion."
+  [^Quaternion q]
   [(.getX q) (.getY q) (.getZ q) (.getW q)])
 
 
-(defn vec->quat [v]
+(defn vec->quat
+  "Given a Clojure sequence `v` of four numbers, returns a corresponding 
+   [Quaternion](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/math/Quaternion.html)
+   object. Essentially, if the sequence `v` matches any of the signatures of a
+   Quaternion constructor, this will work; but four numbers is the expected case.
+   
+   **An exception may be thrown** if the elements of `v` are not four numbers each
+   of which can be cast to Java float."
+  [v]
   (apply quat v))
 
-(defn detach-all-child [^Node node]
+(defn detach-all-child
+  "Removes all children attached to this `node`.
+   
+   **An exception may be thrown** if `node` is not an instance of 
+   [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html)"
+  [^Node node]
   (doto node .detachAllChildren))
 
 
-(defn ^AssetManager asset-manager []
+(defn ^AssetManager asset-manager
+  "Return the [AssetManager](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) of the current `*app*`, if any."
+  []
   (.getAssetManager *app*))
 
 
-(defn ^InputManager input-manager []
+(defn ^InputManager input-manager
+  "Return the [InputManager](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/input/InputManager.html) of the current `*app*`, if any."
+  []
   (.getInputManager *app*))
 
 
-(defn ^AppStateManager state-manager []
+(defn ^AppStateManager state-manager
+  "Return the [AppStateManager](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppStateManager.html) of the current `*app*`, if any."
+  []
   (.getStateManager *app*))
 
 
-(defn ^Node root-node []
+(defn ^Node root-node
+  "Return the root [Node](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html) of the current `*app*`, if any."
+  []
   (.getRootNode *app*))
 
 
-(defn gui-node []
+(defn gui-node
+  "Return the GUI [Node](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html) of the current `*app*`, if any."
+  []
   (.getGuiNode *app*))
 
 
 (defn audio-node
-  "Possible `type` options -> :buffer and :stream"
+  "Creates and returns an instance of [`AudioNode`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/audio/AudioNode.html) 
+   with this `name` and this `type`.
+   
+   Possible `type` options -> :buffer and :stream"
   [^String name type]
   (let [^AudioData$DataType type (case type
                                    :buffer AudioData$DataType/Buffer
@@ -279,16 +398,33 @@
     (AudioNode. (asset-manager) name type)))
 
 
-(defn play [^AudioNode an]
+(defn play
+  "Causes the [`AudioNode`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/audio/AudioNode.html) `an`
+   to start playing its audio track, if any."
+  [^AudioNode an]
   (doto an .play))
 
 
-(defn play-ins [^AudioNode an]
+(defn play-ins
+  "Causes the [`AudioNode`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/audio/AudioNode.html) `an`
+   to start playing an instance of its audio track, if any."
+  [^AudioNode an]
   (doto an .playInstance))
 
 
-(defn particle-emitter [name type num-particles]
-  (ParticleEmitter. name type num-particles))
+(defn particle-emitter
+  "Creates and returns an instance of [`ParticleEmitter`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/effect/ParticleEmitter.html),
+   with this `name`, `type` and `num_particles`.
+   
+   `type` is expected to be an instance of com.jme3.effect.ParticleMesh$Type, 
+   or else one of the keywords `:triangle` or `:point`."
+  [name type num-particles]
+  (let [ptype (if (instance? type com.jme3.effect.ParticleMesh$Type)
+                type
+                (case type
+                  :triangle com.jme3.effect.ParticleMesh$Type/Triangle
+                  :point com.jme3.effect.ParticleMesh$Type/Point))]
+    (ParticleEmitter. name ptype num-particles)))
 
 
 (defn emit-all-particles [^ParticleEmitter pe]
@@ -398,7 +534,10 @@
 
 
 (defn create-sky
-  "Possible `type` options -> :cube, :sphere and :equirect"
+  "Creates and returns a [`Spatial`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html)
+   object representing a sky. The argument `path` should be the path name 
+   of the texture asset to use. Possible values for `type` are `:cube`, 
+   `:sphere` and `:equirect`"
   [path type]
   (SkyFactory/createSky (asset-manager)
                         ^String path
@@ -762,8 +901,8 @@
    (vector? bindings) "a vector for its binding"
    (even? (count bindings)) "an even number of forms in binding vector")
   `(let* ~(destructure bindings)
-     ~@body
-     (merge ~@(remove :_ (map #(hash-map (keyword %) %) (take-nth 2 bindings))))))
+         ~@body
+         (merge ~@(remove :_ (map #(hash-map (keyword %) %) (take-nth 2 bindings))))))
 
 
 (defn ^Camera cam []
@@ -840,31 +979,31 @@
    Please have a look at com.jme3.app.SimpleApplication for more."
   [name & {:keys [opts init update] :as m}]
   `(when-let [r# (defonce ~name
-                          (let [app# (proxy [SimpleApplication] []
-                                       (simpleInitApp []
-                                         (binding [*app* ~'this]
+                   (let [app# (proxy [SimpleApplication] []
+                                (simpleInitApp []
+                                  (binding [*app* ~'this]
                                            ;;re-init and this block has to be same.
-                                           (let [init-result# (~init)]
-                                             (when (map? init-result#)
-                                               (swap! states assoc ::app init-result#)))))
-                                       (simpleUpdate [tpf#]
-                                         (when (-> @states :initialized? false? not)
-                                           (binding [*app* ~'this]
-                                             (let [update-result# ((or ~update
-                                                                       (constantly nil)) tpf#)]
-                                               (when (map? update-result#)
-                                                 (swap! states clojure.core/update ::app merge update-result#))))))
-                                       (destroy []
-                                         (when-let [destroy# (:destroy ~m)]
-                                           (destroy#))
-                                         (proxy-super destroy)))]
-                            (when (seq ~opts)
-                              (some->> ~opts :show-settings? (.setShowSettings app#))
-                              (some->> ~opts :pause-on-lost-focus? (.setPauseOnLostFocus app#))
-                              (some->> ~opts :display-fps? (.setDisplayFps app#))
-                              (some->> ~opts :display-stat-view? (.setDisplayStatView app#))
-                              (some->> ~opts :settings map->app-settings (.setSettings app#)))
-                            app#))]
+                                    (let [init-result# (~init)]
+                                      (when (map? init-result#)
+                                        (swap! states assoc ::app init-result#)))))
+                                (simpleUpdate [tpf#]
+                                  (when (-> @states :initialized? false? not)
+                                    (binding [*app* ~'this]
+                                      (let [update-result# ((or ~update
+                                                                (constantly nil)) tpf#)]
+                                        (when (map? update-result#)
+                                          (swap! states clojure.core/update ::app merge update-result#))))))
+                                (destroy []
+                                  (when-let [destroy# (:destroy ~m)]
+                                    (destroy#))
+                                  (proxy-super destroy)))]
+                     (when (seq ~opts)
+                       (some->> ~opts :show-settings? (.setShowSettings app#))
+                       (some->> ~opts :pause-on-lost-focus? (.setPauseOnLostFocus app#))
+                       (some->> ~opts :display-fps? (.setDisplayFps app#))
+                       (some->> ~opts :display-stat-view? (.setDisplayStatView app#))
+                       (some->> ~opts :settings map->app-settings (.setSettings app#)))
+                     app#))]
      (swap! instances (fnil conj []) r#)
      r#))
 
@@ -883,13 +1022,15 @@
   "AppState represents continuously executing code inside the main loop.
 
    e.g.:
-   (app-state ::my-app-state
+   ```
+       (app-state ::my-app-state
               :init (fn [] (println \"App State initialized.\"))
               :update (fn [tpf] (println \"update:\" tpf))
               :on-enable (fn [] (println \"on enable\"))
               :on-disable (fn [] (println \"on disable\"))
               :cleanup (fn [] (println \"cleaning\")))
-
+   ```
+   
    If any function returns a hash map, the hash map will be registered to the mutable global state under
    app-states entry.
 
@@ -920,16 +1061,18 @@
 
    If any function returns a hash map, the hash map will be registered to the mutable global state under
    controls entry.
-
+   ```
    (control ::my-control
             :init (fn [] (println \"init\" tpf))
             :update (fn [tpf] (println \"update\" tpf))
             :render (fn [rm vp] (println \"render\" rm vp)))
-
+   ```
    Also, there is `:set-spatial` callback that you can provide your custom fn. Either way, you'll have `spatial` in
    your control's state with `:spatial` key.
 
-   Please have a look Control and AbstractControl for more."
+   Please have a look 
+   [Control](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/control/Control.html) and 
+   [AbstractControl](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/control/AbstractControl.html) for more."
   [kw & {:keys [init update render] :as m}]
   (check-qualified-keyword kw)
   (let [init        (wrap-with-bound init)
@@ -963,7 +1106,9 @@
   (.isEnabled *control*))
 
 
-(defn running? [^SimpleApplication app]
+(defn running?
+
+  [^SimpleApplication app]
   (boolean (some-> app .getContext .isCreated)))
 
 
