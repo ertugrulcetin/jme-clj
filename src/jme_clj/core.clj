@@ -11,7 +11,7 @@
    (com.jme3.app.state AppStateManager BaseAppState AppState)
    (com.jme3.asset AssetManager)
    (com.jme3.audio AudioNode AudioData$DataType AudioListenerState)
-   (com.jme3.bullet BulletAppState)
+   (com.jme3.bullet BulletAppState PhysicsSpace$BroadphaseType)
    (com.jme3.bullet.collision.shapes CapsuleCollisionShape)
    (com.jme3.bullet.control RigidBodyControl CharacterControl BetterCharacterControl)
    (com.jme3.bullet.util CollisionShapeFactory)
@@ -63,23 +63,28 @@
   *app*
   "The currently active [`SimpleApplication`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/SimpleApplication.html) instance, if any.
              
-  **Note that** many functions will fail if `*app*` is bound to anything
+  **Note that** many functions will fail if `*app*` is not bound, or is bound to anything
   other than a `SimpleApplication`."
   nil)
 
 (def ^{:dynamic true
        :tag     AbstractControl}
-  *control* nil)
+  *control*
+  "The currently active [`AbstractControl`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/control/AbstractControl.html), if any.
+                
+  **Note that** many functions will fail if `*control*` is not bound, or is bound to anything
+  other than an `AbstractControl`."
+  nil)
 
 
 (defn get-main-state
-  "Returns the mutable global state map [`states`](#var-states)."
+  "Returns the mutable global state map `[[states]]`."
   []
   @states)
 
 
 (defn get-state
-  "With no arguments, returns the current value of `::app` in [`states`](#var-states);
+  "With no arguments, returns the current value of `::app` in `[[states]]`;
    with one argument, `type`, expected to be one of `:app`, `app-state` or
    `:control`, returns the appropriate value from `states`; with two arguments, 
    returns the value identified by the key or sequence of keys `kw` within that part
@@ -101,7 +106,7 @@
 (defn update-state
   "Prepends `type`, expected to be one of `:app`, `app-state` or `:control`, to
    `ks`, expected to be a key or sequence of keys, as a path through 
-   [`states`](#var-states) and updates states by replacing the value identified
+   `[[states]]` and updates states by replacing the value identified
    with the result of applying the function `f`  to that value, with any 
    additional `args` supplied.
    
@@ -427,46 +432,104 @@
     (ParticleEmitter. name ptype num-particles)))
 
 
-(defn emit-all-particles [^ParticleEmitter pe]
+(defn emit-all-particles 
+  "Instantly causes `pe` to emit all the particles possible to be emitted. Any particles which are currently inactive will be spawned immediately."
+  [^ParticleEmitter pe]
   (doto pe .emitAllParticles))
 
 
-(defn listener []
+(defn listener
+  "Returns the audio [`Listener`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/audio/Listener.html)
+   instance associated with the current application, if any."
+  []
   (.getListener *app*))
 
 
-(defn view-port []
+(defn view-port 
+  "Returns the [`ViewPort`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/renderer/ViewPort.html)
+   instance associated with the current application, if any."
+  []
   (.getViewPort *app*))
 
 
-(defn bullet-app-state []
+(defn bullet-app-state 
+  "Creates and returns a new [`BulletAppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/bullet/BulletAppState.html) instance.
+   This is an app state to manage a single Bullet physics space.
+   
+   With zero args, returns a bullet space which searches for collisions using 
+   Dynamic Bounding Volume Trees, which may be inefficient.
+   
+   With two args, `world-min` and `world-max`, both of which must be instances of
+   [`Vector3f`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/math/Vector3f.html)
+   (e.g. created with [[vec3]]), creates an explicitly bounded space to search for collisions.
+   
+   With three args, where the first two are instances of `Vector3f`, the third should be a keyword
+   with one of the following values:
+   
+   * `:axis-sweep-3` improved broadphase as in the two-arg signature, tracks up to 16384 objects;
+   * `:axis-sweep-3-32` improved broadphase, tracks up to 65536 objects;
+   * `:dbvt` broadphase as in the zero-args signature, allowing quicker adding/removing of physics objects;
+   * `:simple` naive and probably inefficient broadphase search."
+  ([]
   (BulletAppState.))
+  ([^Vector3f world-min ^Vector3f world-max]
+   (BulletAppState. world-min world-max))
+  ([^Vector3f world-min ^Vector3f world-max ^clojure.lang.Keyword broadphase-type]
+   (BulletAppState. world-min world-max (case broadphase-type
+                                          :axis-sweep-3 PhysicsSpace$BroadphaseType/AXIS_SWEEP_3
+                                          :axis-sweep-3-32 PhysicsSpace$BroadphaseType/AXIS_SWEEP_3_32
+                                          :dbvt PhysicsSpace$BroadphaseType/DBVT
+                                          :simple PhysicsSpace$BroadphaseType/SIMPLE))))
 
 
 (defn capsule-collision-shape
+  "Creates and returns a new [`CapsuleCollisionShape`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/bullet/collision/shapes/CapsuleCollisionShape.html) object."
   ([radius height]
    (CapsuleCollisionShape. radius height))
   ([radius height axi]
    (CapsuleCollisionShape. radius height axi)))
 
 
-(defn add-control [^Spatial spatial control]
+(defn add-control
+  "Adds the specified `control` to the specified `spatial`.
+   
+   **An exception will be thrown** if
+   
+   1. `control` is not an instance of [`Control`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/control/Control.html);
+   2. `spatial` is not an instance of [`Spatial`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html)"
+  [^Spatial spatial control]
   (doto spatial (.addControl control)))
 
 
-(defn get-control [^Spatial spatial ^Class c]
+(defn get-control 
+  "Get from this `spatial` its control of class `c`, if any.
+   
+   **An exception will be thrown** if
+   1. `spatial` is not an instance of [`Spatial`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html);
+   2. `c` is not a class conforming to [`Control`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/control/Control.html)"
+  [^Spatial spatial ^Class c]
   (.getControl spatial c))
 
 
-(defn character-control [shape step-height]
+(defn character-control 
+  "Creates and returns a new [`CharacterControl`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/bullet/control/CharacterControl.html) object. 
+   
+   **Note that** [[better-character-control]] may be preferable."
+  [shape step-height]
   (CharacterControl. shape step-height))
 
 
-(defn better-character-control [radius height mass]
+(defn better-character-control 
+  "Creates and returns a new [`BetterCharacterControl`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/bullet/control/BetterCharacterControl.html) object."
+  [radius height mass]
   (BetterCharacterControl. radius height mass))
 
 
-(defn load-model [path]
+(defn load-model 
+  "Loads, instantiates and returns the model at the specified `path` from the `AssetManager` of the current `[[*app*]]`.
+   
+   Models can be jME3 object files (`J3O`), OgreXML (`mesh.xml`), `BLEND`, `FBX` or `OBJ` files."
+  [path]
   (.loadModel (asset-manager) ^String path))
 
 
@@ -949,11 +1012,13 @@
 
 (defmacro ^{:ignore-long-fn? true} defsimpleapp
   "Creates a SimpleApplication instance and binds with given name. Requires 3 parameters besides name.
-   init   (initialize fn, required)
-   update (update fn, optional)
-   opts   (app settings, optional)
+   
+   * `init`   (initialize fn, required)
+   * `update` (update fn, optional)
+   * `opts`   (app settings, optional)
 
    e.g.:
+   ```
    (defsimpleapp app
                  :opts {:show-settings?       false
                         :pause-on-lost-focus? false
@@ -962,6 +1027,7 @@
                                                :frame-rate     60}}
                  :init init
                  :update simple-update)
+   ```
 
    When init fn returns a hash map, this map registered to the mutable global state so it can be accessed from
    update fn and other fns. Also, this applies for the update fn, it's content merged to the mutable global state.
@@ -973,7 +1039,7 @@
    It's not recommended to create multiple defsimpleapp instances inside one JVM.
    Some odd behaviours might occur due to shared states. Please run new JVM instance per application.
 
-   If you would like to run another SimpleApplication instance inside the same JVM (same REPL),
+   If you would like to run another [SimpleApplication](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/SimpleApplication.html) instance inside the same JVM (same REPL),
    an option could be using `unbind-app` for unbinding current app (var), and re-defining app with `defsimpleapp`.
 
    Please have a look at com.jme3.app.SimpleApplication for more."
