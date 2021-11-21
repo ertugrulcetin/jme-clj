@@ -159,23 +159,25 @@
 
 (defn app-settings
   "Creates an [AppSettings](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/system/AppSettings.html) instance."
-  [load-defaults? & {:keys [fullscreen?
-                            vsync?
-                            width
-                            height
-                            frequency
-                            title
+  [load-defaults? & {:keys [dialog-image
                             frame-rate
-                            resizable?]}]
+                            frequency
+                            fullscreen?
+                            height
+                            resizable?
+                            title
+                            vsync?
+                            width]}]
   (let [settings (AppSettings. (boolean load-defaults?))]
-    (some->> fullscreen? (.setFullscreen settings))
-    (some->> vsync? (.setVSync settings))
-    (some->> width (.setWidth settings))
-    (some->> height (.setHeight settings))
-    (some->> title (.setTitle settings))
-    (some->> frequency (.setFrequency settings))
+    (some->> dialog-image (.setSettingsDialogImage settings))
     (some->> frame-rate (.setFrameRate settings))
+    (some->> frequency (.setFrequency settings))
+    (some->> fullscreen? (.setFullscreen settings))
+    (some->> height (.setHeight settings))
     (some->> resizable? (.setResizable settings))
+    (some->> vsync? (.setVSync settings))
+    (some->> title (.setTitle settings))
+    (some->> width (.setWidth settings))
     settings))
 
 
@@ -432,7 +434,7 @@
     (ParticleEmitter. name ptype num-particles)))
 
 
-(defn emit-all-particles 
+(defn emit-all-particles
   "Instantly causes `pe` to emit all the particles possible to be emitted. Any particles which are currently inactive will be spawned immediately."
   [^ParticleEmitter pe]
   (doto pe .emitAllParticles))
@@ -445,14 +447,14 @@
   (.getListener *app*))
 
 
-(defn view-port 
+(defn view-port
   "Returns the [`ViewPort`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/renderer/ViewPort.html)
    instance associated with the current application, if any."
   []
   (.getViewPort *app*))
 
 
-(defn bullet-app-state 
+(defn bullet-app-state
   "Creates and returns a new [`BulletAppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/bullet/BulletAppState.html) instance.
    This is an app state to manage a single Bullet physics space.
    
@@ -471,7 +473,7 @@
    * `:dbvt` broadphase as in the zero-args signature, allowing quicker adding/removing of physics objects;
    * `:simple` naive and probably inefficient broadphase search."
   ([]
-  (BulletAppState.))
+   (BulletAppState.))
   ([^Vector3f world-min ^Vector3f world-max]
    (BulletAppState. world-min world-max))
   ([^Vector3f world-min ^Vector3f world-max ^clojure.lang.Keyword broadphase-type]
@@ -501,17 +503,18 @@
   (doto spatial (.addControl control)))
 
 
-(defn get-control 
+(defn get-control
   "Get from this `spatial` its control of class `c`, if any.
    
    **An exception will be thrown** if
+
    1. `spatial` is not an instance of [`Spatial`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html);
    2. `c` is not a class conforming to [`Control`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/control/Control.html)"
   [^Spatial spatial ^Class c]
   (.getControl spatial c))
 
 
-(defn character-control 
+(defn character-control
   "Creates and returns a new [`CharacterControl`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/bullet/control/CharacterControl.html) object. 
    
    **Note that** [[better-character-control]] may be preferable."
@@ -519,33 +522,62 @@
   (CharacterControl. shape step-height))
 
 
-(defn better-character-control 
+(defn better-character-control
   "Creates and returns a new [`BetterCharacterControl`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/bullet/control/BetterCharacterControl.html) object."
   [radius height mass]
   (BetterCharacterControl. radius height mass))
 
 
-(defn load-model 
-  "Loads, instantiates and returns the model at the specified `path` from the `AssetManager` of the current `[[*app*]]`.
+(defn load-model
+  "Loads, instantiates and returns the model at the specified `path` from the [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) of the current `[[*app*]]`.
    
    Models can be jME3 object files (`J3O`), OgreXML (`mesh.xml`), `BLEND`, `FBX` or `OBJ` files."
   [path]
   (.loadModel (asset-manager) ^String path))
 
 
-(defn load-texture [path]
+(defn load-texture
+  "Loads, instantiates and returns the texture at the specified `path` from the 
+   [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) of the current `[[*app*]]`.
+   
+   supported types are `BMP`, `JPG`, `PNG`, `GIF`, `TGA`, `DDS`, `PFM`, and `HDR`. The texture 
+   will be loaded with mip-mapping enabled."
+  [path]
   (.loadTexture (asset-manager) ^String path))
 
 
-(defn load-font [path]
+(defn load-font
+  "Loads, instantiates and returns the [`BitmapFont`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/font/BitmapFont.html) at the specified `path` from the 
+   [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) 
+   of the current `[[*app*]]`.
+
+   Font files are in AngelCode text format, and are with the extension `fnt`."
+  [path]
   (.loadFont (asset-manager) path))
 
 
-(defn load-asset [path]
+(defn load-asset
+  "Loads, instantiates and returns the asset at the specified `path` from the 
+   [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) 
+   of the current `[[*app*]]`.
+
+   Assets of any type will be loaded. If the specified asset is not found, returns `nil`."
+  [path]
   (.loadAsset (asset-manager) ^String path))
 
 
 (defn bitmap-text
+  "Creates and returns a new, empty, [`BitmapText`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/font/BitmapText.html) object.
+
+   The object created has no actual text; to assign it text, call its `.setText` method.
+
+   With zero args, create the text in the default font. 
+   With one arg, `gui-font`, expected to be an instance of 
+   [`BitmapFont`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/font/BitmapFont.html),
+   create the text in that font.
+   With two arge, `gui-font` and `right-to-left`, where `gui-font` is expected to be a 
+   `BitmapFont`, create tha text in
+   that font and, if `right-to-left` is truthy, written from right to left."
   ([]
    (bitmap-text (load-font "Interface/Fonts/Default.fnt") false))
   ([gui-font]
@@ -554,24 +586,42 @@
    (BitmapText. gui-font right-to-left)))
 
 
-(defn box [x y z]
+(defn box
+  "Create and return a new [`Box`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/shape/Box.html) 
+   (cuboid) with these dimensions."
+  [x y z]
   (Box. x y z))
 
 
-(defn geo [name mesh]
+(defn geo
+  "Create and return a new [`Geometry`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Geometry.html) 
+   object with this `name` based on this `mesh`. `name` is expected to be 
+   a `String`; `mesh` is expected to be an instance of
+   [`Mesh`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Mesh.html)."
+  [name mesh]
   (Geometry. name mesh))
 
 
-(defn material [path]
+(defn material
+  "Loads, instantiates and returns the [`Material`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/material/Material.html) at the specified `path` from the 
+   [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) 
+   of the current `[[*app*]]`.
+
+   Material files conform to [the J3MD format](https://wiki.jmonkeyengine.org/docs/3.4/core/material/material_specification.html)
+   and have the extension `J3MD`."
+  [path]
   (Material. (asset-manager) path))
 
 
 (defn unshaded-mat []
+  "Create and return an instance of the unshaded material."
   (material "Common/MatDefs/Misc/Unshaded.j3md"))
 
 
 (defn cull-hint
-  "Possible `type` options -> :always, :dynamic, :inherit and :never"
+  "Set the cull hint for the [`Spatial`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html) `s` to the specified `type`.
+
+   Possible `type` options -> :always, :dynamic, :inherit and :never"
   [^Spatial s type]
   (doto s (.setCullHint (case type
                           :always Spatial$CullHint/Always
@@ -580,19 +630,57 @@
                           :never Spatial$CullHint/Never))))
 
 
-(defn color-rgba [r g b a]
-  (ColorRGBA. r g b a))
+(defn color-rgba
+  "Create and return a new instance of [`ColorRGBA`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/math/ColorRGBA.html) with the specified values."
+  [red green blue alpha]
+  (ColorRGBA. red green blue alpha))
 
 
-(defn register-locator [path locator]
+(defn register-locator
+  "Registers the given `locator` class, locating assets from `path`, with the 
+   [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html)
+   associated with the current value of [[*app*]]. 
+   [`AssetLocators`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetLocator.html) 
+   are invoked in the order they were registered, to locate the asset by the AssetKey. 
+   Once an AssetLocator returns a non-null AssetInfo, it is sent to the AssetLoader to load the asset.
+   
+   **An exception will be thrown** if
+   
+   1. `locator` is not an instance of `AssetLocator`;
+   2. `path` is not a valid path.
+   
+   See [`registerLocator`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html#registerLocator-java.lang.String-java.lang.Class-)"
+  [path locator]
   (doto (asset-manager) (.registerLocator path locator)))
 
 
-(defn scale-texture-coords [^Mesh mesh scale-factor]
+(defn scale-texture-coords
+  "Scales the texture coordinate buffer on this `mesh` by the given `scale-factor`.
+
+   Note that values above 1 will cause the texture to tile, while values 
+   below 1 will cause the texture to stretch. 
+   
+   **An exception will be thrown** if
+   
+   1. `mesh` is not an instance of [`Mesh`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Mesh.html);
+   2. there's no texture coordinate buffer on the mesh;
+   3. the texture coordinate buffer is not in 2D float format."
+  [^Mesh mesh scale-factor]
   (doto mesh (.scaleTextureCoordinates scale-factor)))
 
 
-(defn create-mesh-shape [spatial]
+(defn create-mesh-shape
+  "Create a mesh shape for the given `spatial`, expected to be an instance of 
+   [`Spatial`]().
+
+   This type of collision shape is mesh-accurate and meant for immovable 'world objects'. 
+   Examples include terrain, houses or whole shooter levels.
+
+   Objects with 'mesh' type collision shape will not collide with each other.
+
+   Creates a [`HeightfieldCollisionShape`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/bullet/collision/shapes/HeightfieldCollisionShape.html)
+   if the supplied spatial is a [`TerrainQuad`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/terrain/geomipmap/TerrainQuad.html)."
+  [spatial]
   (CollisionShapeFactory/createMeshShape spatial))
 
 
@@ -611,42 +699,73 @@
 
 
 (defn rigid-body-control
+  "Create and return a new instance of [`RigidBodyControl`](),
+   controlling a body with this `mass` (a positive number castable to float),
+   and optionally this `shape`, an instance of
+[`CollisionShape`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/bullet/collision/shapes/CollisionShape.html)."
   ([^Float mass]
    (RigidBodyControl. mass))
   ([shape mass]
    (RigidBodyControl. shape mass)))
 
 
-(defn attach [app-state]
+(defn attach
+  "Attach this `app-state`, expected to be an instance of [`AppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppState.html)
+   to the [`AppStateManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppStateManager.html)
+   associated with the current [[*app*]], if any."
+  [app-state]
   (.attach (state-manager) app-state)
   app-state)
 
 
-(defn attach-all [& app-states]
+(defn attach-all
+  "Attach all these `app-states`, expected to be an instances of [`AppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppState.html)
+   to the [`AppStateManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppStateManager.html)
+   associated with the current [[*app*]], if any."
+  [& app-states]
   (doseq [a app-states]
     (attach a))
   app-states)
 
 
-(defn detach [app-state]
+(defn detach
+  "Detach this `app-state`, expected to be an instance of [`AppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppState.html)
+  from the [`AppStateManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppStateManager.html)
+   associated with the current [[*app*]], if any."
+  [app-state]
   (.detach (state-manager) app-state)
   app-state)
 
 
-(defn attach-child [^Node node ^Spatial s]
-  (doto node (.attachChild s)))
+(defn attach-child
+  "Attach this `spatial` (an instance of [`Spatial'](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html)) 
+   as a child of this `node` (an instance of [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html)).
+
+   **Note thsat** Node is a subclass of Spatial, so all Nodes are Spatials but not vice versa."
+  [^Node node ^Spatial spatial]
+  (doto node (.attachChild spatial)))
 
 
-(defn detach-child [^Node node ^Spatial s]
-  (doto node (.detachChild s)))
+(defn detach-child
+  "Detach this `spatial`, an instance of [`Spatial`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html), 
+   from among the children of this `node` (an instance of [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html)).
+
+   **Note thsat** Node is a subclass of Spatial, so all Nodes are Spatials but not vice versa."
+  [^Node node ^Spatial spatial]
+  (doto node (.detachChild spatial)))
 
 
 (defn add-to-root [^Node node]
+  "Attach this `node` [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html)) 
+   as a child of the root node of the current binding of [[*app*]]."
   (.attachChild (root-node) node)
   node)
 
 
-(defn remove-from-root [^Node node]
+(defn remove-from-root
+  "Detach this `node` [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html)) 
+   from among the children of the root node of the current binding of [[*app*]]."
+  [^Node node]
   (.detachChild (root-node) node)
   node)
 
@@ -655,19 +774,36 @@
   (doto node .removeFromParent))
 
 
-(defn ^JmeContext context []
+(defn ^JmeContext context
+  "Returns the [`JmeContext`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/system/JmeContext.html) associated with the current value of [[*app*]], if any."
+  []
   (.getContext *app*))
 
 
-(defn set-display-stat-view [show]
+(defn set-display-stat-view
+  ;; TODO: no upstream documentation either. Need to work out what this does!
+  [show]
   (doto *app* (.setDisplayStatView show)))
 
 
-(defn set-display-fps [show]
+(defn set-display-fps
+   ;; TODO: no upstream documentation either. Need to work out what this does!
+  [show]
   (doto *app* (.setDisplayFps show)))
 
 
-(defn light [type]
+(defn light 
+  "Creates a new instance of a subclass of 
+   [`Light`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/light/Light.html).
+   
+   Supported values of `type` are:
+   
+   * `:ambient` returns an instance of [`AmbientLight`]();
+   * `:directional` returns an instance of [`DirectionalLight`]();
+   * `:point` returns an instance of [`PointLight.`]();
+   * `:probe` returns an instance of [`LightProbe`]();
+   * `:spot` returns an instance of [`PointLight.`]()."
+  [type]
   (case type
     :directional (DirectionalLight.)
     :ambient (AmbientLight.)
@@ -947,6 +1083,7 @@
   "Executes the body and returns a hash map with key-val pairs that extracted from bindings. Ignores `_` bindings.
 
   e.g.:
+  ```
   (letj [shootables (node \"Shootables\")
          _ (init-keys)
          _ (init-cross-hairs)
@@ -958,7 +1095,8 @@
             (attach-child (make-char))))
 
   => {:mark mark
-      :shootables shootables}"
+      :shootables shootables}
+  ```"
   [bindings & body]
   (k/assert-all
    (vector? bindings) "a vector for its binding"
@@ -1286,6 +1424,8 @@
 
 
 (defn enqueue [f]
+  "Engue a form `f` to be executed within the current binding environment, 
+   but in the main rendering loop thread of the current [[*app*]]."
   (let [^Runnable f (bound-fn* f)]
     (.enqueue *app* f)))
 

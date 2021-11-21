@@ -20,3 +20,9 @@ pom.xml.asc
 *.log
 .m2
 *.so
+
+.classpath
+
+.project
+
+.settings/
