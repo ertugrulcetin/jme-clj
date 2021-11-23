@@ -51,19 +51,19 @@
                  It keeps app, app-state, control states and others."}
   states (atom {}))
 
-(defonce ^{:doc "A list of SimpleApplication instances created with `defsimpleapp`."}
+(defonce ^{:doc "A list of [`SimpleApplication`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/SimpleApplication.html) instances created with [[defsimpleapp]]."}
   instances (atom []))
 
 (def ^{:doc "The currently active [`SimpleApplication`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/SimpleApplication.html) instance, if any.
              
-             **Note that** many functions will fail if `*app* is bound to anything
+             **Note that** many functions will fail if [[*app*]] is bound to anything
              other than a `SimpleApplication`."
        :dynamic true
        :tag     SimpleApplication}
   *app*
   "The currently active [`SimpleApplication`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/SimpleApplication.html) instance, if any.
              
-  **Note that** many functions will fail if `*app*` is not bound, or is bound to anything
+  **Note that** many functions will fail if [[*app*]] is not bound, or is bound to anything
   other than a `SimpleApplication`."
   nil)
 
@@ -300,14 +300,14 @@
    passed, such that all are numbers which can be cast to floats, the object 
    will have those values.
 
-   **Note that** if three arguments are passed, the first two must quaternions 
-   and the third a number, otherwise an exception will be thrown; this is not
-   what seems to be implied by the signature!
-   "
+   If three arguments are passed, either the first two should be `Quaternions` 
+   and the third a number castable to float, or all three should be numbers 
+   castable to floats; otherwise, `nil` will be returned."
   ([]
    (Quaternion.))
-  ([^Float x ^Float y ^Float z]
-   (Quaternion. x y z))
+  ([x y z]
+   (cond (and (instance? Quaternion x) (instance? Quaternion y) (number? z)) (Quaternion. x y z)
+         (reduce #(and %1 %2) (map number? [x y z])) (Quaternion. x y z 1.0)))
   ([^Float x ^Float y ^Float z ^Float w]
    (Quaternion. x y z w)))
 
@@ -364,31 +364,31 @@
 
 
 (defn ^AssetManager asset-manager
-  "Return the [AssetManager](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) of the current `*app*`, if any."
+  "Return the [AssetManager](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) of the current [[*app*]], if any."
   []
   (.getAssetManager *app*))
 
 
 (defn ^InputManager input-manager
-  "Return the [InputManager](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/input/InputManager.html) of the current `*app*`, if any."
+  "Return the [InputManager](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/input/InputManager.html) of the current [[*app*]], if any."
   []
   (.getInputManager *app*))
 
 
 (defn ^AppStateManager state-manager
-  "Return the [AppStateManager](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppStateManager.html) of the current `*app*`, if any."
+  "Return the [AppStateManager](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppStateManager.html) of the current [[*app*]], if any."
   []
   (.getStateManager *app*))
 
 
 (defn ^Node root-node
-  "Return the root [Node](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html) of the current `*app*`, if any."
+  "Return the root [Node](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html) of the current [[*app*]], if any."
   []
   (.getRootNode *app*))
 
 
 (defn gui-node
-  "Return the GUI [Node](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html) of the current `*app*`, if any."
+  "Return the GUI [Node](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html) of the current [[*app*]], if any."
   []
   (.getGuiNode *app*))
 
@@ -397,7 +397,10 @@
   "Creates and returns an instance of [`AudioNode`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/audio/AudioNode.html) 
    with this `name` and this `type`.
    
-   Possible `type` options -> :buffer and :stream"
+   Possible `type` options:
+  
+  * `:buffer`
+  * `:stream`"
   [^String name type]
   (let [^AudioData$DataType type (case type
                                    :buffer AudioData$DataType/Buffer
@@ -435,7 +438,8 @@
 
 
 (defn emit-all-particles
-  "Instantly causes `pe` to emit all the particles possible to be emitted. Any particles which are currently inactive will be spawned immediately."
+  "Instantly causes `pe`, an instance of [`ParticleEmitter`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/effect/ParticleEmitter.html),
+   to emit all the particles possible to be emitted. Any particles which are currently inactive will be spawned immediately."
   [^ParticleEmitter pe]
   (doto pe .emitAllParticles))
 
@@ -528,8 +532,8 @@
   (BetterCharacterControl. radius height mass))
 
 
-(defn load-model 
-  "Loads, instantiates and returns the model at the specified `path` from the [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) of the current `[[*app*]]`.
+(defn load-model
+  "Loads, instantiates and returns the model at the specified `path` from the [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) of the current [[*app*]].
    
    Models can be jME3 object files (`J3O`), OgreXML (`mesh.xml`), `BLEND`, `FBX` or `OBJ` files."
   [path]
@@ -538,7 +542,7 @@
 
 (defn load-texture
   "Loads, instantiates and returns the texture at the specified `path` from the 
-   [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) of the current `[[*app*]]`.
+   [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) of the current [[*app*]].
    
    supported types are `BMP`, `JPG`, `PNG`, `GIF`, `TGA`, `DDS`, `PFM`, and `HDR`. The texture 
    will be loaded with mip-mapping enabled."
@@ -546,20 +550,20 @@
   (.loadTexture (asset-manager) ^String path))
 
 
-(defn load-font 
+(defn load-font
   "Loads, instantiates and returns the [`BitmapFont`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/font/BitmapFont.html) at the specified `path` from the 
    [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) 
-   of the current `[[*app*]]`.
+   of the current [[*app*]].
 
    Font files are in AngelCode text format, and are with the extension `fnt`."
   [path]
   (.loadFont (asset-manager) path))
 
 
-(defn load-asset 
+(defn load-asset
   "Loads, instantiates and returns the asset at the specified `path` from the 
    [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) 
-   of the current `[[*app*]]`.
+   of the current [[*app*]].
 
    Assets of any type will be loaded. If the specified asset is not found, returns `nil`."
   [path]
@@ -586,14 +590,14 @@
    (BitmapText. gui-font right-to-left)))
 
 
-(defn box 
+(defn box
   "Create and return a new [`Box`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/shape/Box.html) 
-   (cuboid) with these dimensions."
+   (cuboid) with these dimensions, expected to be numbers castable to float."
   [x y z]
   (Box. x y z))
 
 
-(defn geo 
+(defn geo
   "Create and return a new [`Geometry`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Geometry.html) 
    object with this `name` based on this `mesh`. `name` is expected to be 
    a `String`; `mesh` is expected to be an instance of
@@ -602,10 +606,10 @@
   (Geometry. name mesh))
 
 
-(defn material 
+(defn material
   "Loads, instantiates and returns the [`Material`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/material/Material.html) at the specified `path` from the 
    [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) 
-   of the current `[[*app*]]`.
+   of the current [[*app*]].
 
    Material files conform to [the J3MD format](https://wiki.jmonkeyengine.org/docs/3.4/core/material/material_specification.html)
    and have the extension `J3MD`."
@@ -613,8 +617,9 @@
   (Material. (asset-manager) path))
 
 
-(defn unshaded-mat []
+(defn unshaded-mat
   "Create and return an instance of the unshaded material."
+  []
   (material "Common/MatDefs/Misc/Unshaded.j3md"))
 
 
@@ -630,7 +635,7 @@
                           :never Spatial$CullHint/Never))))
 
 
-(defn color-rgba 
+(defn color-rgba
   "Create and return a new instance of [`ColorRGBA`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/math/ColorRGBA.html) with the specified values."
   [red green blue alpha]
   (ColorRGBA. red green blue alpha))
@@ -709,8 +714,8 @@
    (RigidBodyControl. shape mass)))
 
 
-(defn attach 
-  "Attach this `app-state`, expected to be an instance of [`AppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppState.html)
+(defn attach
+  "Attach this `app-state`, expected to be an instance of [`AppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppState.html),
    to the [`AppStateManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppStateManager.html)
    associated with the current [[*app*]], if any."
   [app-state]
@@ -718,18 +723,18 @@
   app-state)
 
 
-(defn attach-all 
-   "Attach all these `app-states`, expected to be an instances of [`AppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppState.html)
+(defn attach-all
+  "Attach all these `app-states`, expected to be an instances of [`AppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppState.html),
    to the [`AppStateManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppStateManager.html)
    associated with the current [[*app*]], if any."
- [& app-states]
+  [& app-states]
   (doseq [a app-states]
     (attach a))
   app-states)
 
 
-(defn detach 
-  "Detach this `app-state`, expected to be an instance of [`AppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppState.html)
+(defn detach
+  "Detach this `app-state`, expected to be an instance of [`AppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppState.html),
   from the [`AppStateManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppStateManager.html)
    associated with the current [[*app*]], if any."
   [app-state]
@@ -737,45 +742,50 @@
   app-state)
 
 
-(defn attach-child 
-  "Attach this `spatial` (an instance of [`Spatial'](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html)) 
-   as a child of this `node` (an instance of [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html)).
+(defn attach-child
+  "Attach this `spatial`, an instance of [`Spatial`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html),
+   as a child of this `node`, an instance of [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html).
 
-   **Note thsat** Node is a subclass of Spatial, so all Nodes are Spatials but not vice versa."
+   **Note that** Node is a subclass of Spatial, so all Nodes are Spatials but not vice versa."
   [^Node node ^Spatial spatial]
   (doto node (.attachChild spatial)))
 
 
-(defn detach-child 
-    "Detach this `spatial`, an instance of [`Spatial`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html), 
+(defn detach-child
+  "Detach this `spatial`, an instance of [`Spatial`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html), 
    from among the children of this `node` (an instance of [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html)).
 
-   **Note thsat** Node is a subclass of Spatial, so all Nodes are Spatials but not vice versa."
+   **Note that** Node is a subclass of Spatial, so all Nodes are Spatials but not vice versa."
   [^Node node ^Spatial spatial]
   (doto node (.detachChild spatial)))
 
 
-(defn add-to-root [^Node node]
-  "Attach this `node` [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html)) 
+(defn add-to-root
+  "Attach this `node`, an instance of [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html), 
    as a child of the root node of the current binding of [[*app*]]."
+  [^Node node]
   (.attachChild (root-node) node)
   node)
 
 
-(defn remove-from-root 
-  "Detach this `node` [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html)) 
+(defn remove-from-root
+  "Detach this `node`, an instance of [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html),
    from among the children of the root node of the current binding of [[*app*]]."
- [^Node node]
+  [^Node node]
   (.detachChild (root-node) node)
   node)
 
 
-(defn remove-from-parent [^Node node]
+(defn remove-from-parent
+  "Detach this `node`, an instance of [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html),
+   from among the children of its immediate parent."
+  [^Node node]
   (doto node .removeFromParent))
 
 
 (defn ^JmeContext context
-  "Returns the [`JmeContext`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/system/JmeContext.html) associated with the current value of [[*app*]], if any."
+  "Returns the [`JmeContext`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/system/JmeContext.html) 
+   associated with the current value of [[*app*]], if any."
   []
   (.getContext *app*))
 
@@ -792,17 +802,17 @@
   (doto *app* (.setDisplayFps show)))
 
 
-(defn light 
+(defn light
   "Creates a new instance of a subclass of 
    [`Light`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/light/Light.html).
    
    Supported values of `type` are:
    
-   * `:ambient` returns an instance of [`AmbientLight`]();
-   * `:directional` returns an instance of [`DirectionalLight`]();
-   * `:point` returns an instance of [`PointLight.`]();
-   * `:probe` returns an instance of [`LightProbe`]();
-   * `:spot` returns an instance of [`PointLight.`]()."
+   * `:ambient` returns an instance of [`AmbientLight`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/light/AmbientLight.html);
+   * `:directional` returns an instance of [`DirectionalLight`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/light/DirectionalLight.html);
+   * `:point` returns an instance of [`PointLight`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/light/PointLight.html);
+   * `:probe` returns an instance of [`LightProbe`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/light/LightProbe.html);
+   * `:spot` returns an instance of [`SpotLight`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/light/SpotLight.html)."
   [type]
   (case type
     :directional (DirectionalLight.)
@@ -823,46 +833,76 @@
   (TangentBinormalGenerator/generate mesh))
 
 
-(defn node [name]
+(defn node
+  "Creates and returns a new instance of 
+   [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html) 
+   with the specified `name`."
+  [name]
   (Node. name))
 
 
-(defn rotate [^Spatial spatial x y z]
+(defn rotate
+  "Rotate this `spatial` by the angles `x`, `y`, `z` in their respective axes; angles
+   specified in radians."
+  [^Spatial spatial x y z]
   (.rotate spatial x y z))
 
 
 (defn scale
+  "Scale this `spatial` by the fixed amount `s`, or by differential amounts  `x`, `y`,
+   `z` in their respective axes."
   ([^Spatial spatial s]
    (.scale spatial s))
   ([^Spatial spatial x y z]
    (.scale spatial x y z)))
 
 
-(defn image-based-height-map [img]
+(defn image-based-height-map
+  "Create and return a new instance of [`ImageBasedHeightMap`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/terrain/heightmap/ImageBasedHeightMap.html)
+   based on this `img`, expected to be an instance of [`Image`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/texture/Image.html)."
+  [img]
   (ImageBasedHeightMap. img))
 
 
-(defn image [^Texture texture]
+(defn image
+  "Return the [`Image`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/texture/Image.html) 
+   associated with this `texture`."
+  [^Texture texture]
   (.getImage texture))
 
 
-(defn load-height-map [^HeightMap hm]
+(defn load-height-map
+  "Populate [`HeightMap`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/terrain/heightmap/HeightMap.html) `hm` with actual heightmap data from its source."
+  [^HeightMap hm]
   (doto hm .load))
 
 
-(defn get-height-map [^HeightMap hm]
+(defn get-height-map
+  "Return an array of real numbers representing the heights in this [`HeightMap`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/terrain/heightmap/HeightMap.html) `hm`"
+  [^HeightMap hm]
   (.getHeightMap hm))
 
 
-(defn hill-height-map [size iterations min-radius max-radius seed]
+(defn hill-height-map
+  "Create and return a new instance of [`HillHeightMap`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/terrain/heightmap/HillHeightMap.html) 
+   - essentially, a heightmap of random hilly terrain."
+  [size iterations min-radius max-radius seed]
   (HillHeightMap. size iterations min-radius max-radius seed))
 
 
-(defn terrain-quad [name path-size total-size hm]
+(defn terrain-quad
+  "Create and return a new instance of [`TerrainQuad`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/terrain/geomipmap/TerrainQuad.html)"
+  [name path-size total-size hm]
   (TerrainQuad. name path-size total-size hm))
 
 
-(defn terrain-lod-control [^Terrain terrain ^Camera camera]
+(defn terrain-lod-control
+  "Creates and returns a new instance of [`TerrainLodControl`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/terrain/geomipmap/TerrainLodControl.html), 
+   controlling the level of detail of this `terrain` as viewed by this `camera`.
+   
+   `terrain` is expected to be an instance of [`Terrain`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/terrain/Terrain.html); 
+   `camera` is expected to be an instance of [`Camera`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/renderer/Camera.html)."
+  [^Terrain terrain ^Camera camera]
   (TerrainLodControl. terrain camera))
 
 
@@ -926,27 +966,54 @@
                  (-> settings seq flatten)))))
 
 
-(defn add-light [^Spatial spatial light]
+(defn add-light
+  "Add this `light`, expected to be an instance of [`Light`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/light/Light.html)
+  to this `spatial`, expected to be an instance of [`Spatial`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html)"
+  [^Spatial spatial light]
   (doto spatial (.addLight light)))
 
 
-(defn remove-light [^Spatial spatial light]
+(defn remove-light
+  "Remove this `light`, expected to be an instance of [`Light`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/light/Light.html)
+  from this `spatial`, expected to be an instance of [`Spatial`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html)"
+  [^Spatial spatial light]
   (doto spatial (.removeLight light)))
 
 
-(defn add-light-to-root [light]
+(defn add-light-to-root
+  "Add this `light`, expected to be an instance of [`Light`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/light/Light.html)
+  to the root node of the current value of [[*app*]]."
+  [light]
   (add-light (root-node) light))
 
 
-(defn key-trigger [code]
+(defn key-trigger
+  "Create and return a new instance of [`KeyTrigger`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/input/controls/KeyTrigger.html)
+   responding to this key `code`, which should be a number castable to integer, 
+   although **note that** there are suitable values defined as static variables in
+   [`KeyInput`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/input/KeyInput.html)."
+  [code]
   (KeyTrigger. code))
 
 
-(defn mouse-trigger [code]
+(defn mouse-trigger
+  "Create and return a new instance of [`MouseButtonTrigger`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/input/controls/MouseButtonTrigger.html), 
+   responding to this mouse button `code`, which should be a number castable to integer, 
+   although **note that** there are suitable values defined as static variables in
+   [`MouseInput`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/input/MouseInput.html)."
+  [code]
   (MouseButtonTrigger. code))
 
 
-(defn mouse-ax-trigger [code negative?]
+(defn mouse-ax-trigger
+  "Create and return a new instance of [`MouseAxisTrigger`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/input/controls/MouseAxisTrigger.html), 
+   responding to this this mouse axis `code`, which should be a number castable to integer, 
+   although **note that** there are suitable values defined as static variables in
+   [`MouseInput`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/input/MouseInput.html).
+   
+   If `negative?` is truthy, the trigger will respond to negative events on this axis; 
+   otherwise, it will respond to positive events."
+  [code negative?]
   (MouseAxisTrigger. code negative?))
 
 
@@ -999,13 +1066,37 @@
     m))
 
 
-(defn apply-input-mapping [{:keys [triggers listeners] :as m}]
+(defn apply-input-mapping
+  "Takes a map, `m`, with two keys, `:triggers`, `:listeners` such that:
+   
+   1. the value of `:triggers` is a map which maps keywords onto triggers;
+   2. the value of `:listeners` is a map which maps listeners onto
+   keywords or sequences of keywords for which triggers have been registered.
+   
+   Using qualified keywords (e.g. '::foo') for inputs is highly recommended!
+   
+   Example:
+   ```
+   (apply-input-mapping
+   ;;
+   {:triggers  {::pause  (key-trigger KeyInput/KEY_P)
+                ::left   (key-trigger KeyInput/KEY_J)
+                ::right  (key-trigger KeyInput/KEY_K)
+                ::rotate [(key-trigger KeyInput/KEY_SPACE)
+                          (mouse-trigger MouseInput/BUTTON_LEFT)]}
+    :listeners {(on-action-listener) ::pause
+                (on-analog-listener) [::left ::right ::rotate]}})
+   ```
+   
+   See [tutorial code](https://github.com/ertugrulcetin/jme-clj/blob/master/test/examples/beginner_tutorials/hello_input_system.clj)."
+  [{:keys [triggers listeners] :as m}]
   (create-input-mapping triggers)
   (register-input-mapping listeners)
   m)
 
 
-(defn action-listener [f]
+(defn action-listener
+  [f]
   (let [f (bound-fn* f)]
     (proxy [ActionListener] []
       (onAction [name pressed? tpf]
@@ -1075,7 +1166,11 @@
   (.addListener control listener))
 
 
-(defn create-channel [^AnimControl control]
+(defn create-channel
+  "Creates and returns a new instance of [`AnimChannel`]() on the [`AnimControl`]() `control`.
+   
+   **Note that** `AnimChannel` and `AnimControl` are deprecated."
+  [^AnimControl control]
   (.createChannel control))
 
 
@@ -1106,35 +1201,55 @@
          (merge ~@(remove :_ (map #(hash-map (keyword %) %) (take-nth 2 bindings))))))
 
 
-(defn ^Camera cam []
+(defn ^Camera cam
+  "Returns the main camera of the current value of [[*app*]], if any."
+  []
   (.getCamera *app*))
 
 
-(defn fly-cam []
+(defn fly-cam
+  "Returns the 'flyCam' of the current value of [[*app*]], if any."
+  []
   (.getFlyByCamera *app*))
 
 
 (defn look-at
+  "Direct the [`Camera`]() that is passed as `cam`, or the main camera of the current 
+   value of [[*app*]] if `cam` is not passed, to look at the 
+   [`Vector3f`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/math/Vector3f.html) `pos`, 
+   using the `Vector3f` `world-up-vector` to orient the camera."
   ([pos world-up-vec]
    (look-at (cam) pos world-up-vec))
   ([^Camera cam pos world-up-vec]
    (doto cam (.lookAt pos world-up-vec))))
 
 
-(defn collision-results []
+(defn collision-results
+  "Create and return a new instance of [`CollisionResults`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/collision/CollisionResults.html)."
+  []
   (CollisionResults.))
 
 
-(defn ray [origin direction]
+(defn ray
+  "Create and return a new instance of [`Ray`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/math/Ray.html)
+   - a line segment which has a [`Vector3f`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/math/Vector3f.html) 
+   `origin` and a `Vector3f` `direction`. That is, a point and an infinite ray is cast from this point"
+  [origin direction]
   (Ray. origin direction))
 
 
-(defn ^CollisionResults collide-with [^Collidable o collidable results]
+(defn ^CollisionResults collide-with
+  "Check for a collision between [`Collidable`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/collision/Collidable.html)`s` `o` and `collidable`, and,
+   if detected, add it to these [`CollisionResults`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/collision/CollisionResults.html) `results`."
+  ;; TODO: I'd suggest renaming the arg `collidable` to `other`; and then, possibly, `o` to `collidable`.
+  [^Collidable o collidable results]
   (.collideWith o collidable results)
   results)
 
 
-(defn size [^CollisionResults o]
+(defn size
+  "Returns the number of collisions represented by this [`CollisionResults`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/collision/CollisionResults.html) `o`."
+  [^CollisionResults o]
   (.size o))
 
 
@@ -1180,7 +1295,7 @@
    If you would like to run another [SimpleApplication](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/SimpleApplication.html) instance inside the same JVM (same REPL),
    an option could be using `unbind-app` for unbinding current app (var), and re-defining app with `defsimpleapp`.
 
-   Please have a look at com.jme3.app.SimpleApplication for more."
+   Please have a look at [com.jme3.app.SimpleApplication](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/SimpleApplication.html) for more."
   [name & {:keys [opts init update] :as m}]
   `(when-let [r# (defonce ~name
                    (let [app# (proxy [SimpleApplication] []
@@ -1238,7 +1353,8 @@
    If any function returns a hash map, the hash map will be registered to the mutable global state under
    app-states entry.
 
-   Please have a look AppState and BaseAppState for more."
+   Please have a look [`AppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppState.html)
+   and [`BaseAppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/BaseAppState.html) for more."
   [kw & {:keys [init update on-enable on-disable cleanup]}]
   (check-qualified-keyword kw)
   (let [simple-app (atom nil)
@@ -1311,7 +1427,6 @@
 
 
 (defn running?
-
   [^SimpleApplication app]
   (boolean (some-> app .getContext .isCreated)))
 
@@ -1353,7 +1468,7 @@
 
 
 (defn clear
-  "Detaches all child nodes and removes all local lights from the root node."
+  "Detaches all child nodes and removes all local lights from the root node of the application which is the current value of [[*app*]]."
   [^SimpleApplication app]
 
   (let [root-node     (.getRootNode app)
@@ -1423,9 +1538,10 @@
   (reset! instances []))
 
 
-(defn enqueue [f]
+(defn enqueue
   "Engue a form `f` to be executed within the current binding environment, 
    but in the main rendering loop thread of the current [[*app*]]."
+  [f]
   (let [^Runnable f (bound-fn* f)]
     (.enqueue *app* f)))
 
@@ -1439,7 +1555,9 @@
 
 (defmacro run
   "Every code that changes the state should be wrapped with `run` macro.
-   Otherwise `Make sure you do not modify the scene from another thread!` exception will be thrown."
+   Otherwise `Make sure you do not modify the scene from another thread!` exception will be thrown.
+   
+   Returns `nil`."
   [app & body]
   `(binding [*app* ~app]
      (enqueue* ~@body)))

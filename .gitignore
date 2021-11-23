@@ -26,3 +26,5 @@ pom.xml.asc
 .project
 
 .settings/
+
+.calva/output-window/
