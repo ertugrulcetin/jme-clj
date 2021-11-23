@@ -528,7 +528,7 @@
   (BetterCharacterControl. radius height mass))
 
 
-(defn load-model
+(defn load-model 
   "Loads, instantiates and returns the model at the specified `path` from the [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) of the current `[[*app*]]`.
    
    Models can be jME3 object files (`J3O`), OgreXML (`mesh.xml`), `BLEND`, `FBX` or `OBJ` files."
@@ -546,7 +546,7 @@
   (.loadTexture (asset-manager) ^String path))
 
 
-(defn load-font
+(defn load-font 
   "Loads, instantiates and returns the [`BitmapFont`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/font/BitmapFont.html) at the specified `path` from the 
    [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) 
    of the current `[[*app*]]`.
@@ -556,7 +556,7 @@
   (.loadFont (asset-manager) path))
 
 
-(defn load-asset
+(defn load-asset 
   "Loads, instantiates and returns the asset at the specified `path` from the 
    [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) 
    of the current `[[*app*]]`.
@@ -586,14 +586,14 @@
    (BitmapText. gui-font right-to-left)))
 
 
-(defn box
+(defn box 
   "Create and return a new [`Box`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/shape/Box.html) 
    (cuboid) with these dimensions."
   [x y z]
   (Box. x y z))
 
 
-(defn geo
+(defn geo 
   "Create and return a new [`Geometry`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Geometry.html) 
    object with this `name` based on this `mesh`. `name` is expected to be 
    a `String`; `mesh` is expected to be an instance of
@@ -602,7 +602,7 @@
   (Geometry. name mesh))
 
 
-(defn material
+(defn material 
   "Loads, instantiates and returns the [`Material`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/material/Material.html) at the specified `path` from the 
    [`AssetManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/asset/AssetManager.html) 
    of the current `[[*app*]]`.
@@ -630,7 +630,7 @@
                           :never Spatial$CullHint/Never))))
 
 
-(defn color-rgba
+(defn color-rgba 
   "Create and return a new instance of [`ColorRGBA`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/math/ColorRGBA.html) with the specified values."
   [red green blue alpha]
   (ColorRGBA. red green blue alpha))
@@ -709,7 +709,7 @@
    (RigidBodyControl. shape mass)))
 
 
-(defn attach
+(defn attach 
   "Attach this `app-state`, expected to be an instance of [`AppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppState.html)
    to the [`AppStateManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppStateManager.html)
    associated with the current [[*app*]], if any."
@@ -718,17 +718,17 @@
   app-state)
 
 
-(defn attach-all
-  "Attach all these `app-states`, expected to be an instances of [`AppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppState.html)
+(defn attach-all 
+   "Attach all these `app-states`, expected to be an instances of [`AppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppState.html)
    to the [`AppStateManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppStateManager.html)
    associated with the current [[*app*]], if any."
-  [& app-states]
+ [& app-states]
   (doseq [a app-states]
     (attach a))
   app-states)
 
 
-(defn detach
+(defn detach 
   "Detach this `app-state`, expected to be an instance of [`AppState`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppState.html)
   from the [`AppStateManager`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/app/state/AppStateManager.html)
    associated with the current [[*app*]], if any."
@@ -737,7 +737,7 @@
   app-state)
 
 
-(defn attach-child
+(defn attach-child 
   "Attach this `spatial` (an instance of [`Spatial'](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html)) 
    as a child of this `node` (an instance of [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html)).
 
@@ -746,8 +746,8 @@
   (doto node (.attachChild spatial)))
 
 
-(defn detach-child
-  "Detach this `spatial`, an instance of [`Spatial`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html), 
+(defn detach-child 
+    "Detach this `spatial`, an instance of [`Spatial`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Spatial.html), 
    from among the children of this `node` (an instance of [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html)).
 
    **Note thsat** Node is a subclass of Spatial, so all Nodes are Spatials but not vice versa."
@@ -762,10 +762,10 @@
   node)
 
 
-(defn remove-from-root
+(defn remove-from-root 
   "Detach this `node` [`Node`](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/Node.html)) 
    from among the children of the root node of the current binding of [[*app*]]."
-  [^Node node]
+ [^Node node]
   (.detachChild (root-node) node)
   node)
 
