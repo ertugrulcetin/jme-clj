@@ -823,10 +823,17 @@
 
 
 (defn sphere
-  ([x y z]
-   (sphere x y z false false))
-  ([x y z use-even-slices? interior?]
-   (Sphere. x y z use-even-slices? interior?)))
+  "Construct and return a new instance of [Sphere](https://javadoc.jmonkeyengine.org/v3.4.0-stable/com/jme3/scene/shape/Sphere.html).
+   
+   * `z-samples` is the number of samples to use along the Z axis, which I take to be the north-south axis (but could be mistaken), should be a positive integer greater than 2, with larger values giving a better approximation of a sphere;
+   * `radial-samples is the number of samples to use along the radial axis, essentially the equatorial plane, should be a positive integer with larger values giving a better approximation of a sphere;
+   * `radius` is the radius of the sphere, should be a number castable to float;
+   * `use-even-slices`, if true, slice the sphere evenly along the Z axis (otherwise, a sine-based interpolation is used);
+   * `interior?` 'not yet documented' in upstream documentation(!)"
+  ([z-samples radial-samples radius]
+   (sphere z-samples radial-samples radius false false))
+  ([z-samples radial-samples radius use-even-slices? interior?]
+   (Sphere. z-samples radial-samples radius use-even-slices? interior?)))
 
 
 (defn generate [^Mesh mesh]
