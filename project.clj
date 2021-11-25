@@ -5,8 +5,7 @@
   :codox {:metadata    {:doc        "**TODO**: write docs"
                         :doc/format :markdown}
           :output-path "docs"
-          ;;:source-uri  "https://github.com/simon-brooke/jme-clj/blob/main/{filepath}#L{line}"
-          :source-uri   "file:///home/simon/workspace/jme-clj/{filepath}#L{line}"
+          :source-uri  "https://github.com/ertugrulcetin/jme-clj/blob/master/{filepath}#L{line}"
           }
   
   :description "A Clojure 3D Game Engine Wrapper, Powered By jMonkeyEngine"
