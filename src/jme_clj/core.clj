@@ -307,7 +307,7 @@
    (Quaternion.))
   ([x y z]
    (cond (and (instance? Quaternion x) (instance? Quaternion y) (number? z)) (Quaternion. x y z)
-         (reduce #(and %1 %2) (map number? [x y z])) (Quaternion. x y z 1.0)))
+         (every? number? [x y z]) (Quaternion. x y z 1.0)))
   ([^Float x ^Float y ^Float z ^Float w]
    (Quaternion. x y z w)))
 
