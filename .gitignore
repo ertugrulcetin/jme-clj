@@ -19,3 +19,12 @@ pom.xml.asc
 .DS_Store
 *.log
 .m2
+*.so
+
+.classpath
+
+.project
+
+.settings/
+
+.calva/output-window/

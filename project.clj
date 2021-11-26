@@ -2,6 +2,12 @@
 
 (defproject jme-clj "0.1.13"
 
+  :codox {:metadata    {:doc        "**TODO**: write docs"
+                        :doc/format :markdown}
+          :output-path "docs"
+          :source-uri  "https://github.com/ertugrulcetin/jme-clj/blob/master/{filepath}#L{line}"
+          }
+  
   :description "A Clojure 3D Game Engine Wrapper, Powered By jMonkeyEngine"
 
   :url "https://github.com/ertugrulcetin/jme-clj"
@@ -32,6 +38,7 @@
             [ertu/lein-carve "0.1.0"]
             [jonase/eastwood "0.3.11"]
             [lein-ancient "0.6.15"]
+            [lein-codox "0.10.8"]
             [lein-nsort "0.1.14"]
             [pisano/lein-kibit "0.1.2"]]
 
