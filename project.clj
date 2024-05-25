@@ -1,6 +1,6 @@
 (def jme-version "3.6.1-stable")
 
-(defproject jme-clj "0.1.13"
+(defproject jme-clj "0.1.14"
 
   :codox {:metadata    {:doc        "**TODO**: write docs"
                         :doc/format :markdown}
@@ -24,6 +24,7 @@
                  [org.jmonkeyengine/jme3-jogg ~jme-version]
                  [org.jmonkeyengine/jme3-effects ~jme-version]
                  [org.jmonkeyengine/jme3-desktop ~jme-version]
+                 [org.jmonkeyengine/jme3-awt-dialogs ~jme-version]
                  [org.jmonkeyengine/jme3-lwjgl3 ~jme-version]
                  [org.jmonkeyengine/jme3-niftygui ~jme-version]
                  [org.jmonkeyengine/jme3-networking ~jme-version]
