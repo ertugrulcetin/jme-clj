@@ -1,4 +1,4 @@
-(def jme-version "3.6.1-stable")
+(def jme-version "3.7.0-beta1")
 
 (defproject jme-clj "0.1.14"
 
