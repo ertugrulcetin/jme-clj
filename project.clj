@@ -1,6 +1,6 @@
-(def jme-version "3.3.2-stable")
+(def jme-version "3.6.1-stable")
 
-(defproject jme-clj "0.1.13"
+(defproject jme-clj "0.1.14"
 
   :codox {:metadata    {:doc        "**TODO**: write docs"
                         :doc/format :markdown}
@@ -22,13 +22,12 @@
                  [org.jmonkeyengine/jme3-plugins ~jme-version]
                  [org.jmonkeyengine/jme3-terrain ~jme-version]
                  [org.jmonkeyengine/jme3-jogg ~jme-version]
-                 [org.jmonkeyengine/jme3-jogl ~jme-version]
                  [org.jmonkeyengine/jme3-effects ~jme-version]
                  [org.jmonkeyengine/jme3-desktop ~jme-version]
-                 [org.jmonkeyengine/jme3-lwjgl ~jme-version]
+                 [org.jmonkeyengine/jme3-awt-dialogs ~jme-version]
+                 [org.jmonkeyengine/jme3-lwjgl3 ~jme-version]
                  [org.jmonkeyengine/jme3-niftygui ~jme-version]
                  [org.jmonkeyengine/jme3-networking ~jme-version]
-                 [org.jmonkeyengine/jme3-blender ~jme-version]
                  [camel-snake-kebab "0.4.2"]
                  [com.github.stephengold/Minie "3.1.0"]
                  [kezban "0.1.92"]
@@ -39,6 +38,7 @@
             [jonase/eastwood "0.3.11"]
             [lein-ancient "0.6.15"]
             [lein-codox "0.10.8"]
+            [lein-cloverage "1.2.2"]
             [lein-nsort "0.1.14"]
             [pisano/lein-kibit "0.1.2"]]
 
